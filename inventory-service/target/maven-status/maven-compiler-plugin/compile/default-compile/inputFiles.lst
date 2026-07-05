@@ -1,0 +1,15 @@
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\dto\ApiResponse.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\dto\InventoryRequest.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\dto\InventoryResponse.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\dto\StockUpdateRequest.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\exception\InsufficientStockException.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\exception\InventoryNotFoundException.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\handler\InventoryEventHandler.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\handler\InventoryHandler.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\model\Inventory.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\model\OrderItem.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\model\OrderPlacedEvent.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\repository\InventoryRepository.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\service\InventoryService.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\util\JsonUtil.java
+D:\AWS PROJECT\inventory-service\src\main\java\com\ecommerce\inventory\util\ResponseUtil.java

@@ -1,0 +1,15 @@
+com\ecommerce\inventory\model\OrderItem.class
+com\ecommerce\inventory\util\JsonUtil.class
+com\ecommerce\inventory\exception\InventoryNotFoundException.class
+com\ecommerce\inventory\exception\InsufficientStockException.class
+com\ecommerce\inventory\dto\InventoryResponse.class
+com\ecommerce\inventory\handler\InventoryHandler.class
+com\ecommerce\inventory\model\OrderPlacedEvent.class
+com\ecommerce\inventory\handler\InventoryEventHandler.class
+com\ecommerce\inventory\service\InventoryService.class
+com\ecommerce\inventory\dto\ApiResponse.class
+com\ecommerce\inventory\dto\InventoryRequest.class
+com\ecommerce\inventory\dto\StockUpdateRequest.class
+com\ecommerce\inventory\util\ResponseUtil.class
+com\ecommerce\inventory\repository\InventoryRepository.class
+com\ecommerce\inventory\model\Inventory.class
