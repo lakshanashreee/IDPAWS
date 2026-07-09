@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.ecommerce.common.security.AuthorizationUtil;
+import com.ecommerce.common.security.UnauthorizedException;
+import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.order.dto.OrderRequest;
 import com.ecommerce.order.dto.OrderResponse;
 import com.ecommerce.order.dto.StatusUpdateRequest;
@@ -85,6 +88,7 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
             Matcher userOrdersMatcher = USER_ORDERS_PATH.matcher(path);
             if (userOrdersMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
                 String userId = resolvePathParam(pathParameters, "userId", userOrdersMatcher.group(1));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
                 List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
                 return ResponseUtil.ok("Orders fetched successfully for user", orders);
             }
@@ -92,6 +96,7 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
             // PUT /orders/{orderId}/status
             Matcher statusMatcher = STATUS_PATH.matcher(path);
             if (statusMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 String orderId = resolvePathParam(pathParameters, "orderId", statusMatcher.group(1));
                 StatusUpdateRequest statusRequest = JsonUtil.fromJson(request.getBody(), StatusUpdateRequest.class);
                 String status = statusRequest != null ? statusRequest.getStatus() : null;
@@ -101,7 +106,11 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
 
             // POST /orders
             if (path.equals("/orders") && "POST".equalsIgnoreCase(httpMethod)) {
+                com.ecommerce.common.security.UserContext user = AuthorizationUtil.requireAdminOrCustomer(request);
                 OrderRequest orderRequest = JsonUtil.fromJson(request.getBody(), OrderRequest.class);
+                if (orderRequest != null && user.isCustomer()) {
+                    orderRequest.setUserId(user.getUserId());
+                }
                 OrderService.CreateOrderResult result = orderService.createOrder(orderRequest);
 
                 if (result.isSuccess()) {
@@ -115,6 +124,7 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
 
             // GET /orders
             if (path.equals("/orders") && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 List<OrderResponse> orders = orderService.getAllOrders();
                 return ResponseUtil.ok("Orders fetched successfully", orders);
             }
@@ -126,10 +136,12 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
 
                 if ("GET".equalsIgnoreCase(httpMethod)) {
                     OrderResponse order = orderService.getOrderById(orderId);
+                    AuthorizationUtil.requireOwnerOrAdmin(request, order.getUserId());
                     return ResponseUtil.ok("Order fetched successfully", order);
                 }
 
                 if ("DELETE".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
                     orderService.deleteOrder(orderId);
                     return ResponseUtil.ok("Order deleted successfully", null);
                 }
@@ -139,6 +151,10 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
 
         } catch (OrderNotFoundException e) {
             return ResponseUtil.notFound(e.getMessage());
+        } catch (UnauthorizedException e) {
+            return ResponseUtil.unauthorized(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {

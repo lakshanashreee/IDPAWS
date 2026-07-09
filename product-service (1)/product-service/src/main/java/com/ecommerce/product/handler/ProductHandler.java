@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.ecommerce.common.security.AuthorizationUtil;
+import com.ecommerce.common.security.UnauthorizedException;
+import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.exception.ProductNotFoundException;
@@ -80,6 +83,7 @@ if (path.startsWith("/default/")) {
             // GET /products/category/{category}
             Matcher categoryMatcher = CATEGORY_PATH.matcher(path);
             if (categoryMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdminOrCustomer(request);
                 String category = resolvePathParam(pathParameters, "category", categoryMatcher.group(1));
                 List<ProductResponse> products = productService.getProductsByCategory(category);
                 return ResponseUtil.ok("Products fetched by category", products);
@@ -87,6 +91,7 @@ if (path.startsWith("/default/")) {
 
             // POST /products
             if (path.equals("/products") && "POST".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 ProductRequest productRequest = JsonUtil.fromJson(request.getBody(), ProductRequest.class);
                 ProductResponse created = productService.createProduct(productRequest);
                 return ResponseUtil.created("Product created successfully", created);
@@ -94,6 +99,7 @@ if (path.startsWith("/default/")) {
 
             // GET /products
             if (path.equals("/products") && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdminOrCustomer(request);
                 List<ProductResponse> products = productService.getAllProducts();
                 return ResponseUtil.ok("Products fetched successfully", products);
             }
@@ -104,17 +110,20 @@ if (path.startsWith("/default/")) {
                 String productId = resolvePathParam(pathParameters, "productId", productIdMatcher.group(1));
 
                 if ("GET".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdminOrCustomer(request);
                     ProductResponse product = productService.getProductById(productId);
                     return ResponseUtil.ok("Product fetched successfully", product);
                 }
 
                 if ("PUT".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
                     ProductRequest productRequest = JsonUtil.fromJson(request.getBody(), ProductRequest.class);
                     ProductResponse updated = productService.updateProduct(productId, productRequest);
                     return ResponseUtil.ok("Product updated successfully", updated);
                 }
 
                 if ("DELETE".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
                     productService.deleteProduct(productId);
                     return ResponseUtil.ok("Product deleted successfully (soft delete)", null);
                 }
@@ -124,6 +133,10 @@ if (path.startsWith("/default/")) {
 
         } catch (ProductNotFoundException e) {
             return ResponseUtil.notFound(e.getMessage());
+        } catch (UnauthorizedException e) {
+            return ResponseUtil.unauthorized(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {

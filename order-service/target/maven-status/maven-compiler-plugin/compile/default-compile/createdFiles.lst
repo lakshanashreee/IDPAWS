@@ -6,11 +6,15 @@ com\ecommerce\order\service\OrderService.class
 com\ecommerce\order\dto\OrderRequest.class
 com\ecommerce\order\handler\OrderHandler.class
 com\ecommerce\order\util\SnsPublisher$PublishOutcome.class
+com\ecommerce\common\security\ForbiddenException.class
 com\ecommerce\order\exception\OrderNotFoundException.class
 com\ecommerce\order\util\JsonUtil.class
+com\ecommerce\common\security\UserContext.class
 com\ecommerce\order\model\OrderItem.class
 com\ecommerce\order\util\ResponseUtil.class
 com\ecommerce\order\dto\OrderResponse.class
+com\ecommerce\common\security\UnauthorizedException.class
+com\ecommerce\common\security\AuthorizationUtil.class
 com\ecommerce\order\service\OrderService$CreateOrderResult.class
 com\ecommerce\order\model\Order.class
 com\ecommerce\order\util\IdGenerator.class

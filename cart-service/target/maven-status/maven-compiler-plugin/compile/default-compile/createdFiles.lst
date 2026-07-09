@@ -4,12 +4,16 @@ com\ecommerce\cart\exception\CartItemNotFoundException.class
 com\ecommerce\cart\dto\ApiResponse.class
 com\ecommerce\cart\dto\CartSummaryResponse.class
 com\ecommerce\cart\handler\CartHandler.class
+com\ecommerce\common\security\ForbiddenException.class
 com\ecommerce\cart\model\CartItem.class
 com\ecommerce\cart\util\ResponseUtil.class
 com\ecommerce\cart\dto\CartResponse.class
 com\ecommerce\cart\dto\CartItemResponse.class
 com\ecommerce\cart\dto\UpdateCartItemRequest.class
+com\ecommerce\common\security\UserContext.class
 com\ecommerce\cart\service\CartService.class
+com\ecommerce\common\security\UnauthorizedException.class
 com\ecommerce\cart\dto\AddCartItemRequest.class
 com\ecommerce\cart\exception\CartNotFoundException.class
 com\ecommerce\cart\util\JsonUtil.class
+com\ecommerce\common\security\AuthorizationUtil.class

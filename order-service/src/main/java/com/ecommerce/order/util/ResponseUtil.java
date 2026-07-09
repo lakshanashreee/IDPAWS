@@ -54,6 +54,14 @@ public final class ResponseUtil {
         return build(400, ApiResponse.error(message));
     }
 
+    public static APIGatewayV2HTTPResponse unauthorized(String message) {
+        return build(401, ApiResponse.error(message));
+    }
+
+    public static APIGatewayV2HTTPResponse forbidden(String message) {
+        return build(403, ApiResponse.error(message));
+    }
+
     public static APIGatewayV2HTTPResponse notFound(String message) {
         return build(404, ApiResponse.error(message));
     }

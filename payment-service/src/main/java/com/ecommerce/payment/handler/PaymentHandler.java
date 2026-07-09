@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.ecommerce.common.security.AuthorizationUtil;
+import com.ecommerce.common.security.UnauthorizedException;
+import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.payment.dto.PaymentResponse;
 import com.ecommerce.payment.dto.PaymentStatusUpdateRequest;
 import com.ecommerce.payment.exception.PaymentNotFoundException;
@@ -85,12 +88,18 @@ public class PaymentHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
             if (orderPaymentsMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
                 String orderId = resolvePathParam(pathParameters, "orderId", orderPaymentsMatcher.group(1));
                 List<PaymentResponse> payments = paymentService.getPaymentsByOrderId(orderId);
+                if (!payments.isEmpty()) {
+                    AuthorizationUtil.requireOwnerOrAdmin(request, payments.get(0).getUserId());
+                } else {
+                    AuthorizationUtil.extractUser(request);
+                }
                 return ResponseUtil.ok("Payments fetched successfully for order", payments);
             }
 
             // PUT /payments/{paymentId}/status
             Matcher statusMatcher = STATUS_PATH.matcher(path);
             if (statusMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 String paymentId = resolvePathParam(pathParameters, "paymentId", statusMatcher.group(1));
                 PaymentStatusUpdateRequest statusRequest =
                         JsonUtil.fromJson(request.getBody(), PaymentStatusUpdateRequest.class);
@@ -101,6 +110,7 @@ public class PaymentHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
 
             // GET /payments
             if (path.equals("/payments") && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 List<PaymentResponse> payments = paymentService.getAllPayments();
                 return ResponseUtil.ok("Payments fetched successfully", payments);
             }
@@ -110,6 +120,7 @@ public class PaymentHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
             if (paymentIdMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
                 String paymentId = resolvePathParam(pathParameters, "paymentId", paymentIdMatcher.group(1));
                 PaymentResponse payment = paymentService.getPaymentById(paymentId);
+                AuthorizationUtil.requireOwnerOrAdmin(request, payment.getUserId());
                 return ResponseUtil.ok("Payment fetched successfully", payment);
             }
 
@@ -117,6 +128,10 @@ public class PaymentHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
 
         } catch (PaymentNotFoundException e) {
             return ResponseUtil.notFound(e.getMessage());
+        } catch (UnauthorizedException e) {
+            return ResponseUtil.unauthorized(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {

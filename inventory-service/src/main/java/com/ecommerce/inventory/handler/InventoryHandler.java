@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.ecommerce.common.security.AuthorizationUtil;
+import com.ecommerce.common.security.UnauthorizedException;
+import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.inventory.dto.InventoryRequest;
 import com.ecommerce.inventory.dto.InventoryResponse;
 import com.ecommerce.inventory.dto.StockUpdateRequest;
@@ -85,6 +88,9 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
                 return ResponseUtil.ok("Health check passed", inventoryService.healthCheck());
             }
 
+            // Enforce ADMIN role for all remaining inventory routes
+            AuthorizationUtil.requireAdmin(request);
+
             // GET /inventory/low-stock
             if (path.equals(LOW_STOCK_PATH) && "GET".equalsIgnoreCase(httpMethod)) {
                 List<InventoryResponse> lowStock = inventoryService.getLowStockInventory();
@@ -146,6 +152,10 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             return ResponseUtil.notFound(e.getMessage());
         } catch (InsufficientStockException e) {
             return ResponseUtil.badRequest(e.getMessage());
+        } catch (UnauthorizedException e) {
+            return ResponseUtil.unauthorized(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {

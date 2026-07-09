@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.ecommerce.common.security.AuthorizationUtil;
+import com.ecommerce.common.security.UnauthorizedException;
+import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.cart.dto.AddCartItemRequest;
 import com.ecommerce.cart.dto.CartResponse;
 import com.ecommerce.cart.dto.CartSummaryResponse;
@@ -88,6 +91,7 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             Matcher summaryMatcher = SUMMARY_PATH.matcher(path);
             if (summaryMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
                 String userId = resolvePathParam(pathParameters, "userId", summaryMatcher.group(1));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
                 CartSummaryResponse summary = cartService.getCartSummary(userId);
                 return ResponseUtil.ok("Cart summary fetched successfully", summary);
             }
@@ -96,6 +100,7 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             Matcher clearMatcher = CLEAR_PATH.matcher(path);
             if (clearMatcher.matches() && "DELETE".equalsIgnoreCase(httpMethod)) {
                 String userId = resolvePathParam(pathParameters, "userId", clearMatcher.group(1));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
                 cartService.clearCart(userId);
                 return ResponseUtil.ok("Cart cleared successfully", null);
             }
@@ -105,6 +110,7 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             if (itemIdMatcher.matches()) {
                 String userId = resolvePathParam(pathParameters, "userId", itemIdMatcher.group(1));
                 String productId = resolvePathParam(pathParameters, "productId", itemIdMatcher.group(2));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
 
                 if ("PUT".equalsIgnoreCase(httpMethod)) {
                     UpdateCartItemRequest updateRequest = JsonUtil.fromJson(request.getBody(), UpdateCartItemRequest.class);
@@ -123,6 +129,7 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             Matcher itemsMatcher = ITEMS_PATH.matcher(path);
             if (itemsMatcher.matches() && "POST".equalsIgnoreCase(httpMethod)) {
                 String userId = resolvePathParam(pathParameters, "userId", itemsMatcher.group(1));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
                 AddCartItemRequest addRequest = JsonUtil.fromJson(request.getBody(), AddCartItemRequest.class);
                 CartResponse updated = cartService.addItem(userId, addRequest);
                 return ResponseUtil.created("Product added to cart successfully", updated);
@@ -132,6 +139,7 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             Matcher cartMatcher = CART_PATH.matcher(path);
             if (cartMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
                 String userId = resolvePathParam(pathParameters, "userId", cartMatcher.group(1));
+                AuthorizationUtil.requireOwnerOrAdmin(request, userId);
                 CartResponse cart = cartService.getCart(userId);
                 return ResponseUtil.ok("Cart fetched successfully", cart);
             }
@@ -140,6 +148,10 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
 
         } catch (CartNotFoundException | CartItemNotFoundException e) {
             return ResponseUtil.notFound(e.getMessage());
+        } catch (UnauthorizedException e) {
+            return ResponseUtil.unauthorized(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {
