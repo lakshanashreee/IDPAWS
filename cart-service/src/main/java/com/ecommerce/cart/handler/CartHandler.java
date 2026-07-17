@@ -198,10 +198,30 @@ public class CartHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
 
         String normalized = path;
 
-        if (normalized.equals("/default")) {
+        boolean stripped;
+        do {
+            stripped = false;
+            // Use exact or slash-boundary checks to avoid "/default" matching "/defaultFoo",
+            // "/prod" matching "/products", etc.
+            if (normalized.equals("/default") || normalized.startsWith("/default/")) {
+                normalized = normalized.substring("/default".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+            if (normalized.equals("/prod") || normalized.startsWith("/prod/")) {
+                normalized = normalized.substring("/prod".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+            if (normalized.equals("/api/v1") || normalized.startsWith("/api/v1/")) {
+                normalized = normalized.substring("/api/v1".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+        } while (stripped);
+
+        if (normalized.isEmpty()) {
             normalized = "/";
-        } else if (normalized.startsWith("/default/")) {
-            normalized = normalized.substring("/default".length());
         }
 
         if (normalized.length() > 1 && normalized.endsWith("/")) {

@@ -19,7 +19,7 @@ public final class ResponseUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("Access-Control-Allow-Origin", "*");
-        headers.put("Access-Control-Allow-Headers", "Content-Type");
+        headers.put("Access-Control-Allow-Headers", "Content-Type,Authorization");
         headers.put("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
         return headers;
     }

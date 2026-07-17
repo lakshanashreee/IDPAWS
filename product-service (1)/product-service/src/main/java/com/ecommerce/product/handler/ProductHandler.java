@@ -59,10 +59,6 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         try {
             String httpMethod = extractHttpMethod(request);
             String path = normalizePath(request.getRawPath());
-
-if (path.startsWith("/default/")) {
-    path = path.substring("/default".length());
-}
             Map<String, String> pathParameters = request.getPathParameters();
 
             logger.log("Incoming request: " + httpMethod + " " + path);
@@ -171,16 +167,52 @@ if (path.startsWith("/default/")) {
     }
 
     /**
-     * Strips a trailing slash (except for the root path) so "/products/"
-     * and "/products" both route the same way.
+     * Normalizes the raw path so routing works the same regardless of stage
+     * naming or API prefix:
+     *  - Strips a leading "/default" stage segment if present.
+     *  - Strips a leading "/prod" stage segment if present.
+     *  - Strips a leading "/api/v1" prefix if present.
+     *  - Strips a trailing slash (except for the root path).
+     *
+     * Runs in a loop so combinations like "/prod/api/v1/products" are fully
+     * stripped to "/products".
      */
     private String normalizePath(String path) {
         if (path == null || path.isBlank()) {
             return "/";
         }
-        if (path.length() > 1 && path.endsWith("/")) {
-            return path.substring(0, path.length() - 1);
+
+        String normalized = path;
+
+        boolean stripped;
+        do {
+            stripped = false;
+            // Use exact or slash-boundary checks to avoid "/prod" matching "/products", etc.
+            if (normalized.equals("/default") || normalized.startsWith("/default/")) {
+                normalized = normalized.substring("/default".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+            if (normalized.equals("/prod") || normalized.startsWith("/prod/")) {
+                normalized = normalized.substring("/prod".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+            if (normalized.equals("/api/v1") || normalized.startsWith("/api/v1/")) {
+                normalized = normalized.substring("/api/v1".length());
+                if (normalized.isEmpty()) normalized = "/";
+                stripped = true;
+            }
+        } while (stripped);
+
+        if (normalized.isEmpty()) {
+            normalized = "/";
         }
-        return path;
+
+        if (normalized.length() > 1 && normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+
+        return normalized;
     }
 }
