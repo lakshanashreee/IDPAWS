@@ -203,17 +203,27 @@ export async function getInventory() {
 }
 
 export async function addStock(productId, quantity) {
-  return request(`/inventory/${productId}/add-stock`, {
-    method: 'PUT',
-    body: JSON.stringify({ quantity })
-  });
+  try {
+    return await request(`/inventory/${productId}/add-stock`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+      suppressLogout: true
+    });
+  } catch (err) {
+    return null;
+  }
 }
 
 export async function reduceStock(productId, quantity) {
-  return request(`/inventory/${productId}/reduce-stock`, {
-    method: 'PUT',
-    body: JSON.stringify({ quantity })
-  });
+  try {
+    return await request(`/inventory/${productId}/reduce-stock`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+      suppressLogout: true
+    });
+  } catch (err) {
+    return null;
+  }
 }
 
 // ----------------------------------------------------
@@ -223,9 +233,24 @@ export async function getOrderPayments(orderId) {
   return request(`/payments/order/${orderId}`, { method: 'GET', suppressLogout: true });
 }
 
-export async function createPayment(paymentData) {
+export async function createPayment(orderIdOrData, userId, amount, paymentMode, paymentStatus = 'SUCCESS', details = {}) {
+  let payload;
+  if (typeof orderIdOrData === 'object' && orderIdOrData !== null) {
+    payload = orderIdOrData;
+  } else {
+    payload = {
+      orderId: orderIdOrData,
+      userId,
+      amount,
+      paymentMode: paymentMode || 'COD',
+      paymentStatus: paymentStatus || 'SUCCESS',
+      status: paymentStatus || 'SUCCESS',
+      details: details || {}
+    };
+  }
+
   return request('/payments', {
     method: 'POST',
-    body: JSON.stringify(paymentData)
+    body: JSON.stringify(payload)
   });
 }

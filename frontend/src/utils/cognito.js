@@ -112,6 +112,7 @@ export const signInUser = (email, password) => {
         // Handle forcing a new password if Cognito requires it (common for new Admins created by Console)
         resolve({
           newPasswordRequired: true,
+          challengeName: 'NEW_PASSWORD_REQUIRED',
           cognitoUser,
           userAttributes,
           requiredAttributes
