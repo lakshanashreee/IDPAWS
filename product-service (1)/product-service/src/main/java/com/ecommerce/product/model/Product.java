@@ -16,6 +16,7 @@ public class Product {
     private String category;
     private double price;
     private boolean active;
+    private String imageUrl;
     private String createdAt;
     private String updatedAt;
 
@@ -23,13 +24,14 @@ public class Product {
     }
 
     public Product(String productId, String name, String description, String category,
-                   double price, boolean active, String createdAt, String updatedAt) {
+                   double price, boolean active, String imageUrl, String createdAt, String updatedAt) {
         this.productId = productId;
         this.name = name;
         this.description = description;
         this.category = category;
         this.price = price;
         this.active = active;
+        this.imageUrl = imageUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -80,6 +82,14 @@ public class Product {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getCreatedAt() {

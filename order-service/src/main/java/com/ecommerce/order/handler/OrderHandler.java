@@ -108,7 +108,9 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
             if (path.equals("/orders") && "POST".equalsIgnoreCase(httpMethod)) {
                 com.ecommerce.common.security.UserContext user = AuthorizationUtil.requireAdminOrCustomer(request);
                 OrderRequest orderRequest = JsonUtil.fromJson(request.getBody(), OrderRequest.class);
-                if (orderRequest != null && user.isCustomer()) {
+                // Always override userId from the JWT for non-admin users (prevents spoofing)
+                // Also covers newly registered users who have no group yet
+                if (orderRequest != null && !user.isAdmin()) {
                     orderRequest.setUserId(user.getUserId());
                 }
                 OrderService.CreateOrderResult result = orderService.createOrder(orderRequest);

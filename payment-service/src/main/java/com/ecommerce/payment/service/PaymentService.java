@@ -1,6 +1,7 @@
 package com.ecommerce.payment.service;
 
 import com.ecommerce.payment.dto.PaymentResponse;
+import com.ecommerce.payment.dto.PaymentRequest;
 import com.ecommerce.payment.exception.PaymentNotFoundException;
 import com.ecommerce.payment.model.OrderPlacedEvent;
 import com.ecommerce.payment.model.Payment;
@@ -52,6 +53,33 @@ public class PaymentService {
         payment.setAmount(event.getTotalAmount());
         payment.setPaymentMode(DEFAULT_PAYMENT_MODE);
         payment.setPaymentStatus(DEFAULT_PAYMENT_STATUS);
+        payment.setTransactionTime(Instant.now().toString());
+
+        paymentRepository.savePayment(payment);
+        return PaymentResponse.fromPayment(payment);
+    }
+
+    public PaymentResponse createPayment(PaymentRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request body is required");
+        }
+        if (request.getOrderId() == null || request.getOrderId().isBlank()) {
+            throw new IllegalArgumentException("orderId is required");
+        }
+        if (request.getUserId() == null || request.getUserId().isBlank()) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        if (request.getAmount() == null || request.getAmount() <= 0) {
+            throw new IllegalArgumentException("amount must be > 0");
+        }
+
+        Payment payment = new Payment();
+        payment.setPaymentId(IdGenerator.generatePaymentId());
+        payment.setOrderId(request.getOrderId());
+        payment.setUserId(request.getUserId());
+        payment.setAmount(request.getAmount());
+        payment.setPaymentMode(request.getPaymentMode() != null ? request.getPaymentMode().trim().toUpperCase() : DEFAULT_PAYMENT_MODE);
+        payment.setPaymentStatus(request.getPaymentStatus() != null ? request.getPaymentStatus().trim().toUpperCase() : DEFAULT_PAYMENT_STATUS);
         payment.setTransactionTime(Instant.now().toString());
 
         paymentRepository.savePayment(payment);

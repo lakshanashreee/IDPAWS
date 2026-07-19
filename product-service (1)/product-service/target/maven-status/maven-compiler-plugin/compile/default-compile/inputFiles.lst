@@ -10,6 +10,7 @@ D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\p
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\model\Product.java
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\repository\ProductRepository.java
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\service\ProductService.java
+D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\service\S3ImageService.java
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\util\IdGenerator.java
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\util\JsonUtil.java
 D:\AWS PROJECT\product-service (1)\product-service\src\main\java\com\ecommerce\product\util\ResponseUtil.java

@@ -43,7 +43,8 @@ public class InventoryEventHandler implements RequestHandler<SQSEvent, Void> {
         for (SQSEvent.SQSMessage message : event.getRecords()) {
             String messageId = message.getMessageId();
             try {
-                OrderPlacedEvent orderPlacedEvent = JsonUtil.fromJson(message.getBody(), OrderPlacedEvent.class);
+                String eventPayload = JsonUtil.unwrapSqsBody(message.getBody());
+                OrderPlacedEvent orderPlacedEvent = JsonUtil.fromJson(eventPayload, OrderPlacedEvent.class);
                 validateOrderPlacedEvent(orderPlacedEvent);
 
                 logger.log("Processing ORDER_PLACED for orderId=" + orderPlacedEvent.getOrderId()

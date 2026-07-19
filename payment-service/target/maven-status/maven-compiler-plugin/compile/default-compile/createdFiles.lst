@@ -2,6 +2,7 @@ com\ecommerce\payment\service\PaymentService.class
 com\ecommerce\payment\dto\PaymentResponse.class
 com\ecommerce\payment\util\JsonUtil.class
 com\ecommerce\payment\util\ResponseUtil.class
+com\ecommerce\payment\dto\PaymentRequest.class
 com\ecommerce\common\security\ForbiddenException.class
 com\ecommerce\payment\model\OrderItem.class
 com\ecommerce\payment\exception\PaymentNotFoundException.class

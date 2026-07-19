@@ -47,6 +47,13 @@
             <version>${aws.sdk.v2.version}</version>
         </dependency>
 
+        <!-- AWS SDK v2 - S3 (object upload / delete + S3Presigner for pre-signed PUT URLs) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.v2.version}</version>
+        </dependency>
+
         <!-- Jackson for JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

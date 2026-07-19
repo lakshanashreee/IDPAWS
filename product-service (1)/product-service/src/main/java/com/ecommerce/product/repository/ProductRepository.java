@@ -146,6 +146,7 @@ public class ProductRepository {
         item.put("category", AttributeValue.builder().s(nullSafe(product.getCategory())).build());
         item.put("price", AttributeValue.builder().n(String.valueOf(product.getPrice())).build());
         item.put("active", AttributeValue.builder().bool(product.isActive()).build());
+        item.put("imageUrl", AttributeValue.builder().s(nullSafe(product.getImageUrl())).build());
         item.put("createdAt", AttributeValue.builder().s(nullSafe(product.getCreatedAt())).build());
         item.put("updatedAt", AttributeValue.builder().s(nullSafe(product.getUpdatedAt())).build());
         return item;
@@ -164,6 +165,7 @@ public class ProductRepository {
         AttributeValue activeAttr = item.get("active");
         product.setActive(activeAttr != null && Boolean.TRUE.equals(activeAttr.bool()));
 
+        product.setImageUrl(getString(item, "imageUrl"));
         product.setCreatedAt(getString(item, "createdAt"));
         product.setUpdatedAt(getString(item, "updatedAt"));
         return product;

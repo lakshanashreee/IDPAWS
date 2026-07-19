@@ -36,7 +36,7 @@ function unwrap(body) {
  *                              triggers a full session logout.
  */
 async function request(path, options = {}) {
-  const { suppressLogout, ...fetchOptions } = options;
+  const { suppressLogout, rawEnvelope, ...fetchOptions } = options;
   const idToken = getIdToken();
   
   const headers = {
@@ -81,6 +81,9 @@ async function request(path, options = {}) {
   if (!text) return null;
   const body = JSON.parse(text);
   // Unwrap the { success, message, data } envelope that all Lambda handlers return
+  if (rawEnvelope) {
+    return body;
+  }
   return unwrap(body);
 }
 
@@ -132,8 +135,97 @@ export async function clearCart(userId) {
 // ORDER SERVICE
 // ----------------------------------------------------
 export async function createOrder(userId, items) {
-  return request('/orders', {
+  const envelope = await request('/orders', {
     method: 'POST',
+    rawEnvelope: true,
     body: JSON.stringify({ userId, items })
+  });
+  const order = unwrap(envelope);
+  const message = envelope?.message || '';
+  const eventPublished = envelope?.success === true
+    && message.toLowerCase().includes('event published');
+  return { order, eventPublished, message };
+}
+
+export async function getUserOrders(userId) {
+  return request(`/orders/user/${userId}`, { method: 'GET', suppressLogout: true });
+}
+
+export async function getAllOrders() {
+  return request('/orders', { method: 'GET' });
+}
+
+// Admin Product CRUD APIs
+export async function createProduct(productData) {
+  return request('/products', {
+    method: 'POST',
+    body: JSON.stringify(productData)
+  });
+}
+
+export async function updateProduct(productId, productData) {
+  return request(`/products/${productId}`, {
+    method: 'PUT',
+    body: JSON.stringify(productData)
+  });
+}
+
+export async function deleteProduct(productId) {
+  return request(`/products/${productId}`, {
+    method: 'DELETE'
+  });
+}
+
+/**
+ * Step 1 of the S3 image upload flow.
+ * Returns { uploadUrl, imageUrl } where:
+ *   uploadUrl – pre-signed PUT URL valid for 5 minutes (browser uploads directly here)
+ *   imageUrl  – the permanent public S3 URL to store in the product record
+ */
+export async function getImageUploadUrl(filename, contentType) {
+  const encoded = encodeURIComponent(filename);
+  const ct      = encodeURIComponent(contentType);
+  return request(`/products/upload-url?filename=${encoded}&contentType=${ct}`, {
+    method: 'GET'
+  });
+}
+
+// Admin Inventory APIs
+export async function createInventory(inventoryData) {
+  return request('/inventory', {
+    method: 'POST',
+    body: JSON.stringify(inventoryData)
+  });
+}
+
+export async function getInventory() {
+  return request('/inventory', { method: 'GET' });
+}
+
+export async function addStock(productId, quantity) {
+  return request(`/inventory/${productId}/add-stock`, {
+    method: 'PUT',
+    body: JSON.stringify({ quantity })
+  });
+}
+
+export async function reduceStock(productId, quantity) {
+  return request(`/inventory/${productId}/reduce-stock`, {
+    method: 'PUT',
+    body: JSON.stringify({ quantity })
+  });
+}
+
+// ----------------------------------------------------
+// PAYMENT SERVICE
+// ----------------------------------------------------
+export async function getOrderPayments(orderId) {
+  return request(`/payments/order/${orderId}`, { method: 'GET', suppressLogout: true });
+}
+
+export async function createPayment(paymentData) {
+  return request('/payments', {
+    method: 'POST',
+    body: JSON.stringify(paymentData)
   });
 }

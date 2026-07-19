@@ -14,6 +14,7 @@ public class ProductResponse {
     private String category;
     private double price;
     private boolean active;
+    private String imageUrl;
     private String createdAt;
     private String updatedAt;
 
@@ -28,6 +29,7 @@ public class ProductResponse {
         response.setCategory(product.getCategory());
         response.setPrice(product.getPrice());
         response.setActive(product.isActive());
+        response.setImageUrl(product.getImageUrl());
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
         return response;
@@ -79,6 +81,14 @@ public class ProductResponse {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getCreatedAt() {

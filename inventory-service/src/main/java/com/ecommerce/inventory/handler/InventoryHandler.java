@@ -88,11 +88,9 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
                 return ResponseUtil.ok("Health check passed", inventoryService.healthCheck());
             }
 
-            // Enforce ADMIN role for all remaining inventory routes
-            AuthorizationUtil.requireAdmin(request);
-
             // GET /inventory/low-stock
             if (path.equals(LOW_STOCK_PATH) && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 List<InventoryResponse> lowStock = inventoryService.getLowStockInventory();
                 return ResponseUtil.ok("Low stock inventory fetched successfully", lowStock);
             }
@@ -100,6 +98,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             // PUT /inventory/{productId}/add-stock
             Matcher addStockMatcher = ADD_STOCK_PATH.matcher(path);
             if (addStockMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 String productId = resolvePathParam(pathParameters, "productId", addStockMatcher.group(1));
                 StockUpdateRequest stockRequest = JsonUtil.fromJson(request.getBody(), StockUpdateRequest.class);
                 Integer quantity = stockRequest != null ? stockRequest.getQuantity() : null;
@@ -110,6 +109,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             // PUT /inventory/{productId}/reduce-stock
             Matcher reduceStockMatcher = REDUCE_STOCK_PATH.matcher(path);
             if (reduceStockMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.extractUser(request); // any logged-in user can reduce stock
                 String productId = resolvePathParam(pathParameters, "productId", reduceStockMatcher.group(1));
                 StockUpdateRequest stockRequest = JsonUtil.fromJson(request.getBody(), StockUpdateRequest.class);
                 Integer quantity = stockRequest != null ? stockRequest.getQuantity() : null;
@@ -119,6 +119,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
 
             // POST /inventory
             if (path.equals("/inventory") && "POST".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
                 InventoryRequest inventoryRequest = JsonUtil.fromJson(request.getBody(), InventoryRequest.class);
                 InventoryResponse created = inventoryService.createInventory(inventoryRequest);
                 return ResponseUtil.created("Inventory created successfully", created);
@@ -126,21 +127,32 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
 
             // GET /inventory
             if (path.equals("/inventory") && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.extractUser(request);
                 List<InventoryResponse> inventoryList = inventoryService.getAllInventory();
                 return ResponseUtil.ok("Inventory fetched successfully", inventoryList);
             }
 
-            // GET /inventory/{productId}, DELETE /inventory/{productId}
+            // GET /inventory/{productId}, DELETE /inventory/{productId}, PUT /inventory/{productId}
             Matcher productIdMatcher = PRODUCT_ID_PATH.matcher(path);
             if (productIdMatcher.matches()) {
                 String productId = resolvePathParam(pathParameters, "productId", productIdMatcher.group(1));
 
                 if ("GET".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.extractUser(request);
                     InventoryResponse inventory = inventoryService.getInventoryById(productId);
                     return ResponseUtil.ok("Inventory fetched successfully", inventory);
                 }
 
+                if ("PUT".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
+                    InventoryRequest updateRequest = JsonUtil.fromJson(request.getBody(), InventoryRequest.class);
+                    Integer quantity = updateRequest != null ? updateRequest.getAvailableQuantity() : null;
+                    InventoryResponse updated = inventoryService.updateInventory(productId, quantity);
+                    return ResponseUtil.ok("Inventory updated successfully", updated);
+                }
+
                 if ("DELETE".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
                     inventoryService.deleteInventory(productId);
                     return ResponseUtil.ok("Inventory deleted successfully", null);
                 }

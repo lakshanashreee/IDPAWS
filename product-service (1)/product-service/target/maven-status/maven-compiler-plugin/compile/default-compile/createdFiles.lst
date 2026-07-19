@@ -2,12 +2,14 @@ com\ecommerce\product\service\ProductService.class
 com\ecommerce\product\dto\ProductRequest.class
 com\ecommerce\product\model\Product.class
 com\ecommerce\product\dto\ProductResponse.class
+com\ecommerce\product\service\S3ImageService.class
 com\ecommerce\product\handler\ProductHandler.class
 com\ecommerce\product\util\JsonUtil.class
 com\ecommerce\product\util\ResponseUtil.class
 com\ecommerce\product\dto\ApiResponse.class
 com\ecommerce\common\security\ForbiddenException.class
 com\ecommerce\product\exception\ProductNotFoundException.class
+com\ecommerce\product\service\S3ImageService$PresignResult.class
 com\ecommerce\common\security\UserContext.class
 com\ecommerce\common\security\UnauthorizedException.class
 com\ecommerce\common\security\AuthorizationUtil.class

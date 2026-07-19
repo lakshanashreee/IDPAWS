@@ -96,6 +96,23 @@ public class InventoryService {
         return InventoryResponse.fromInventory(inventory);
     }
 
+    public InventoryResponse updateInventory(String productId, Integer availableQuantity) {
+        if (availableQuantity == null || availableQuantity < 0) {
+            throw new IllegalArgumentException("availableQuantity must be >= 0");
+        }
+
+        Inventory inventory = inventoryRepository.getInventoryById(productId);
+        if (inventory == null) {
+            throw new InventoryNotFoundException(productId);
+        }
+
+        inventory.setAvailableQuantity(availableQuantity);
+        inventory.setLastUpdated(Instant.now().toString());
+
+        inventoryRepository.updateInventory(inventory);
+        return InventoryResponse.fromInventory(inventory);
+    }
+
     public List<InventoryResponse> getLowStockInventory() {
         return inventoryRepository.getAllInventory().stream()
                 .filter(inventory -> inventory.getAvailableQuantity() <= inventory.getLowStockThreshold())

@@ -9,6 +9,7 @@ import com.ecommerce.common.security.AuthorizationUtil;
 import com.ecommerce.common.security.UnauthorizedException;
 import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.payment.dto.PaymentResponse;
+import com.ecommerce.payment.dto.PaymentRequest;
 import com.ecommerce.payment.dto.PaymentStatusUpdateRequest;
 import com.ecommerce.payment.exception.PaymentNotFoundException;
 import com.ecommerce.payment.service.PaymentService;
@@ -113,6 +114,14 @@ public class PaymentHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
                 AuthorizationUtil.requireAdmin(request);
                 List<PaymentResponse> payments = paymentService.getAllPayments();
                 return ResponseUtil.ok("Payments fetched successfully", payments);
+            }
+
+            // POST /payments
+            if (path.equals("/payments") && "POST".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.extractUser(request); // any logged-in user can submit a payment
+                PaymentRequest paymentRequest = JsonUtil.fromJson(request.getBody(), PaymentRequest.class);
+                PaymentResponse created = paymentService.createPayment(paymentRequest);
+                return ResponseUtil.created("Payment registered successfully", created);
             }
 
             // GET /payments/{paymentId}

@@ -12,6 +12,7 @@ import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.exception.ProductNotFoundException;
 import com.ecommerce.product.service.ProductService;
+import com.ecommerce.product.service.S3ImageService;
 import com.ecommerce.product.util.JsonUtil;
 import com.ecommerce.product.util.ResponseUtil;
 
@@ -42,7 +43,9 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
     private final ProductService productService;
 
     private static final Pattern PRODUCT_ID_PATH = Pattern.compile("^/products/([^/]+)$");
-    private static final Pattern CATEGORY_PATH = Pattern.compile("^/products/category/([^/]+)$");
+    private static final Pattern CATEGORY_PATH   = Pattern.compile("^/products/category/([^/]+)$");
+    /** Exact match – must be checked before PRODUCT_ID_PATH to avoid false captures. */
+    private static final String UPLOAD_URL_PATH  = "/products/upload-url";
 
     public ProductHandler() {
         this.productService = new ProductService();
@@ -74,6 +77,21 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
             // GET /products/health
             if (path.equals("/products/health") && "GET".equalsIgnoreCase(httpMethod)) {
                 return ResponseUtil.ok("Health check passed", productService.healthCheck());
+            }
+
+            // GET /products/upload-url?filename=xxx&contentType=image/jpeg  (Admin only)
+            if (path.equals(UPLOAD_URL_PATH) && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
+                Map<String, String> qp = request.getQueryStringParameters();
+                String filename    = qp != null ? qp.getOrDefault("filename",    "image.jpg")  : "image.jpg";
+                String contentType = qp != null ? qp.getOrDefault("contentType", "image/jpeg") : "image/jpeg";
+                S3ImageService.PresignResult result =
+                        productService.getS3ImageService().generatePresignedPutUrl(filename, contentType);
+                // Return a plain object – no envelope wrapper needed for the pre-sign response.
+                java.util.Map<String, String> body = new java.util.HashMap<>();
+                body.put("uploadUrl", result.getUploadUrl());
+                body.put("imageUrl",  result.getImageUrl());
+                return ResponseUtil.ok("Pre-signed upload URL generated", body);
             }
 
             // GET /products/category/{category}

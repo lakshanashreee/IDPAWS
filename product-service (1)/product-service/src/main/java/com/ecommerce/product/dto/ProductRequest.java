@@ -10,6 +10,8 @@ public class ProductRequest {
     private String category;
     private Double price;
     private Boolean active;
+    /** S3 public URL set by the client after a successful pre-signed PUT upload. */
+    private String imageUrl;
 
     public ProductRequest() {
     }
@@ -52,5 +54,13 @@ public class ProductRequest {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
