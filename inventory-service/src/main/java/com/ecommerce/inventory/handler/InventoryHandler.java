@@ -100,7 +100,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             if (addStockMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
                 AuthorizationUtil.requireAdmin(request);
                 String productId = resolvePathParam(pathParameters, "productId", addStockMatcher.group(1));
-                StockUpdateRequest stockRequest = JsonUtil.fromJson(request.getBody(), StockUpdateRequest.class);
+                StockUpdateRequest stockRequest = JsonUtil.fromJson(getBody(request), StockUpdateRequest.class);
                 Integer quantity = stockRequest != null ? stockRequest.getQuantity() : null;
                 InventoryResponse updated = inventoryService.addStock(productId, quantity);
                 return ResponseUtil.ok("Stock added successfully", updated);
@@ -111,7 +111,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             if (reduceStockMatcher.matches() && "PUT".equalsIgnoreCase(httpMethod)) {
                 AuthorizationUtil.extractUser(request); // any logged-in user can reduce stock
                 String productId = resolvePathParam(pathParameters, "productId", reduceStockMatcher.group(1));
-                StockUpdateRequest stockRequest = JsonUtil.fromJson(request.getBody(), StockUpdateRequest.class);
+                StockUpdateRequest stockRequest = JsonUtil.fromJson(getBody(request), StockUpdateRequest.class);
                 Integer quantity = stockRequest != null ? stockRequest.getQuantity() : null;
                 InventoryResponse updated = inventoryService.reduceStock(productId, quantity);
                 return ResponseUtil.ok("Stock reduced successfully", updated);
@@ -120,7 +120,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             // POST /inventory
             if (path.equals("/inventory") && "POST".equalsIgnoreCase(httpMethod)) {
                 AuthorizationUtil.requireAdmin(request);
-                InventoryRequest inventoryRequest = JsonUtil.fromJson(request.getBody(), InventoryRequest.class);
+                InventoryRequest inventoryRequest = JsonUtil.fromJson(getBody(request), InventoryRequest.class);
                 InventoryResponse created = inventoryService.createInventory(inventoryRequest);
                 return ResponseUtil.created("Inventory created successfully", created);
             }
@@ -145,7 +145,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
 
                 if ("PUT".equalsIgnoreCase(httpMethod)) {
                     AuthorizationUtil.requireAdmin(request);
-                    InventoryRequest updateRequest = JsonUtil.fromJson(request.getBody(), InventoryRequest.class);
+                    InventoryRequest updateRequest = JsonUtil.fromJson(getBody(request), InventoryRequest.class);
                     Integer quantity = updateRequest != null ? updateRequest.getAvailableQuantity() : null;
                     InventoryResponse updated = inventoryService.updateInventory(productId, quantity);
                     return ResponseUtil.ok("Inventory updated successfully", updated);
@@ -170,9 +170,10 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
             return ResponseUtil.forbidden(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseUtil.badRequest(e.getMessage());
-        } catch (Exception e) {
-            context.getLogger().log("Unexpected error: " + e.getMessage());
-            return ResponseUtil.serverError("Internal server error: " + e.getMessage());
+        } catch (Throwable e) {
+            context.getLogger().log("Unexpected error: " + e.getClass().getName() + " - " + e.getMessage());
+            // Return 400 with the exact error message so the frontend logs can see what actually threw the exception
+            return ResponseUtil.badRequest("DEBUG: " + e.getClass().getName() + " - " + e.getMessage());
         }
     }
 
@@ -247,5 +248,13 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
         }
 
         return normalized;
+    }
+
+    private String getBody(APIGatewayV2HTTPEvent request) {
+        String body = request.getBody();
+        if (Boolean.TRUE.equals(request.getIsBase64Encoded()) && body != null) {
+            return new String(java.util.Base64.getDecoder().decode(body), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return body;
     }
 }

@@ -65,6 +65,7 @@ public final class SnsPublisher {
             event.put("items", order.getItems());
             event.put("totalAmount", order.getTotalAmount());
             event.put("status", order.getStatus());
+            event.put("paymentMode", order.getPaymentMode());
             event.put("createdAt", order.getCreatedAt());
 
             String message = JsonUtil.toJson(event);

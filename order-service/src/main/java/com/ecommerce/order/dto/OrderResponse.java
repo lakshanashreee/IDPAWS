@@ -18,6 +18,7 @@ public class OrderResponse {
     private String status;
     private String createdAt;
     private String updatedAt;
+    private String paymentMode;
 
     public OrderResponse() {
     }
@@ -31,6 +32,7 @@ public class OrderResponse {
         response.setStatus(order.getStatus());
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
+        response.setPaymentMode(order.getPaymentMode());
         return response;
     }
 
@@ -88,5 +90,13 @@ public class OrderResponse {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 }

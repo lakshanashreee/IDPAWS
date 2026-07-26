@@ -131,6 +131,7 @@ public class OrderRepository {
 
         item.put("totalAmount", AttributeValue.builder().n(String.valueOf(order.getTotalAmount())).build());
         item.put("status", AttributeValue.builder().s(nullSafe(order.getStatus())).build());
+        item.put("paymentMode", AttributeValue.builder().s(nullSafe(order.getPaymentMode())).build());
         item.put("createdAt", AttributeValue.builder().s(nullSafe(order.getCreatedAt())).build());
         item.put("updatedAt", AttributeValue.builder().s(nullSafe(order.getUpdatedAt())).build());
 
@@ -166,6 +167,7 @@ public class OrderRepository {
                 : 0.0);
 
         order.setStatus(getString(item, "status"));
+        order.setPaymentMode(getString(item, "paymentMode"));
         order.setCreatedAt(getString(item, "createdAt"));
         order.setUpdatedAt(getString(item, "updatedAt"));
 

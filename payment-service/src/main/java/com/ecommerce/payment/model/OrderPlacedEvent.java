@@ -26,6 +26,7 @@ public class OrderPlacedEvent {
     private double totalAmount;
     private String status;
     private String createdAt;
+    private String paymentMode;
 
     public OrderPlacedEvent() {
     }
@@ -84,6 +85,14 @@ public class OrderPlacedEvent {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 
     @Override

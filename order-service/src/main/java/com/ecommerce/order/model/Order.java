@@ -14,6 +14,7 @@ public class Order {
     private List<OrderItem> items;
     private double totalAmount;
     private String status;
+    private String paymentMode;
     private String createdAt;
     private String updatedAt;
 
@@ -86,6 +87,14 @@ public class Order {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 
     @Override

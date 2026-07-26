@@ -51,7 +51,7 @@ public class PaymentService {
         payment.setOrderId(event.getOrderId());
         payment.setUserId(event.getUserId());
         payment.setAmount(event.getTotalAmount());
-        payment.setPaymentMode(DEFAULT_PAYMENT_MODE);
+        payment.setPaymentMode(event.getPaymentMode() != null ? event.getPaymentMode().toUpperCase() : DEFAULT_PAYMENT_MODE);
         payment.setPaymentStatus(DEFAULT_PAYMENT_STATUS);
         payment.setTransactionTime(Instant.now().toString());
 

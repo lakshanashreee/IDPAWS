@@ -134,11 +134,11 @@ export async function clearCart(userId) {
 // ----------------------------------------------------
 // ORDER SERVICE
 // ----------------------------------------------------
-export async function createOrder(userId, items) {
+export async function createOrder(userId, items, paymentMode) {
   const envelope = await request('/orders', {
     method: 'POST',
     rawEnvelope: true,
-    body: JSON.stringify({ userId, items })
+    body: JSON.stringify({ userId, items, paymentMode })
   });
   const order = unwrap(envelope);
   const message = envelope?.message || '';

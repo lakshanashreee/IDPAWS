@@ -611,33 +611,19 @@ function App() {
     if (!userSession || cartData.items.length === 0) return;
     setCartLoading(true);
     try {
+      const isCard = paymentMethod === 'CARD';
+      const paymentMode = isCard ? 'CARD' : 'COD';
+
       // Step 1: Create Order
-      const newOrder = await createOrder(userSession.payload.sub, cartData.items);
+      const newOrder = await createOrder(userSession.payload.sub, cartData.items, paymentMode);
       const orderId = newOrder?.orderId || newOrder?.order?.orderId || newOrder?.id || (typeof newOrder === 'string' ? newOrder : null);
 
       if (!orderId) {
         throw new Error('Order creation failed: Backend did not return orderId.');
       }
 
-      // Step 2: Reduce Inventory Stock
-      for (const item of cartData.items) {
-        await reduceStock(item.productId, item.quantity);
-      }
-
-      // Step 3: Record Payment
-      try {
-        await createPayment({
-          orderId,
-          userId: userSession.payload.sub,
-          amount: cartSubtotal,
-          paymentMode: paymentMethod,
-          paymentStatus: 'SUCCESS',
-          status: 'SUCCESS',
-          details: paymentMethod === 'CARD' ? { cardLast4: cardDetails.cardNumber.slice(-4) } : {}
-        });
-      } catch (payErr) {
-        // Payment record saved
-      }
+      // Backend handles Inventory reduction and Payment creation asynchronously via SNS -> SQS events!
+      // Step 2 & 3 are intentionally skipped here to avoid double-processing.
 
       // Step 4: Clear Shopping Cart
       await clearCart(userSession.payload.sub);
@@ -675,229 +661,228 @@ function App() {
       {/* Decorative Ambient Background Lights */}
       <div className="ambient-glow glow-primary"></div>
       <div className="ambient-glow glow-secondary"></div>
-
-      {/* CUSTOMER HUB */}
-      {view === 'customer_hub' && userSession ? (
-        <div className="storefront-wrapper animate-fade-in" style={{ width: '100%' }}>
-          <CustomerHeader
-            userSession={userSession}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isCartOpen={isCartOpen}
-            setIsCartOpen={setIsCartOpen}
-            cartTotalQuantity={cartTotalQuantity}
-            handleLogout={handleLogout}
-          />
-
-          {success && <div className="alert alert-success screen-container" style={{ marginTop: '1.5rem' }}>{success}</div>}
-
-          {activeTab === 'storefront' && (
-            <>
-              <HeroSection selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
-              <ProductCatalogue
-                products={products}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                categories={categories}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                storefrontLoading={storefrontLoading}
-                storefrontError={storefrontError}
-                fetchProducts={fetchProducts}
-                filteredProducts={filteredProducts}
-                adminInventory={adminInventory}
-                handleAddToCart={handleAddToCart}
-                cartLoading={cartLoading}
-              />
-            </>
-          )}
-
-          {activeTab === 'orders' && (
-            <CustomerOrders
-              ordersLoading={ordersLoading}
-              ordersError={ordersError}
-              orders={orders}
-              fetchOrders={fetchOrders}
+      <div className="app-main-content">
+        {view === 'customer_hub' && userSession ? (
+          <>
+            <CustomerHeader
+              userSession={userSession}
+              handleLogout={handleLogout}
+              isCartOpen={isCartOpen}
+              setIsCartOpen={setIsCartOpen}
+              cartData={cartData}
+              activeTab={activeTab}
               setActiveTab={setActiveTab}
-              setSelectedOrderForInvoice={setSelectedOrderForInvoice}
             />
-          )}
-        </div>
-      ) : view === 'checkout' && userSession ? (
-        <CheckoutView
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-          cardDetails={cardDetails}
-          setCardDetails={setCardDetails}
-          handleConfirmPurchase={handleConfirmPurchase}
-          setView={setView}
-          setActiveTab={setActiveTab}
-          cartLoading={cartLoading}
-          cartSubtotal={cartSubtotal}
-          cartData={cartData}
-        />
-      ) : view === 'admin_hub' && userSession ? (
-        <div className="admin-wrapper animate-fade-in" style={{ width: '100%', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-          <AdminHeader
-            userSession={userSession}
-            adminTab={adminTab}
-            setAdminTab={setAdminTab}
-            setSelectedCustomer={setSelectedCustomer}
-            handleLogout={handleLogout}
-          />
 
-          <div className="screen-container" style={{ paddingTop: '1.5rem', paddingBottom: '4rem' }}>
-            {adminTab === 'products' && (
-              <AdminProducts
-                setEditingProduct={setEditingProduct}
-                setProductForm={setProductForm}
-                setIsAddingProduct={setIsAddingProduct}
-                products={products}
-                adminInventory={adminInventory}
-                handleEditClick={handleEditClick}
-                handleDeleteProduct={handleDeleteProduct}
-              />
+            {activeTab === 'storefront' && (
+              <>
+                <HeroSection />
+                <ProductCatalogue
+                  products={products}
+                  categories={categories}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  storefrontLoading={storefrontLoading}
+                  storefrontError={storefrontError}
+                  handleAddToCart={handleAddToCart}
+                  cartLoading={cartLoading}
+                  fetchProducts={fetchProducts}
+                />
+              </>
             )}
 
-            {adminTab === 'inventory' && (
-              <AdminInventory
-                products={products}
-                adminInventory={adminInventory}
-                editingInventoryId={editingInventoryId}
-                setEditingInventoryId={setEditingInventoryId}
-                editingInventoryQty={editingInventoryQty}
-                setEditingInventoryQty={setEditingInventoryQty}
-                addStock={addStock}
-                reduceStock={reduceStock}
-                fetchAdminInventory={fetchAdminInventory}
-              />
-            )}
-
-            {adminTab === 'customers' && (
-              <AdminCustomers
-                selectedCustomer={selectedCustomer}
-                setSelectedCustomer={setSelectedCustomer}
-                adminOrders={adminOrders}
+            {activeTab === 'orders' && (
+              <CustomerOrders
+                ordersLoading={ordersLoading}
+                ordersError={ordersError}
+                orders={orders}
+                fetchOrders={fetchOrders}
+                setActiveTab={setActiveTab}
                 setSelectedOrderForInvoice={setSelectedOrderForInvoice}
               />
             )}
+          </>
+        ) : view === 'checkout' && userSession ? (
+          <CheckoutView
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            cardDetails={cardDetails}
+            setCardDetails={setCardDetails}
+            handleConfirmPurchase={handleConfirmPurchase}
+            setView={setView}
+            setActiveTab={setActiveTab}
+            cartLoading={cartLoading}
+            cartSubtotal={cartSubtotal}
+            cartData={cartData}
+          />
+        ) : view === 'admin_hub' && userSession ? (
+          <div className="admin-wrapper animate-fade-in" style={{ width: '100%', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            <AdminHeader
+              userSession={userSession}
+              adminTab={adminTab}
+              setAdminTab={setAdminTab}
+              setSelectedCustomer={setSelectedCustomer}
+              handleLogout={handleLogout}
+            />
 
-            {adminTab === 'analytics' && (
-              <AdminAnalytics
-                adminOrders={adminOrders}
-                adminInventory={adminInventory}
-                products={products}
-              />
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="auth-container">
-          <div className="auth-card">
-            <div className="brand-logo-center" style={{ marginBottom: '0.2rem' }}>
-              <span className="brand-initial-l">L</span>AURITE
+            <div className="screen-container" style={{ paddingTop: '1.5rem', paddingBottom: '4rem' }}>
+              {adminTab === 'products' && (
+                <AdminProducts
+                  setEditingProduct={setEditingProduct}
+                  setProductForm={setProductForm}
+                  setIsAddingProduct={setIsAddingProduct}
+                  products={products}
+                  adminInventory={adminInventory}
+                  handleEditClick={handleEditClick}
+                  handleDeleteProduct={handleDeleteProduct}
+                />
+              )}
+
+              {adminTab === 'inventory' && (
+                <AdminInventory
+                  products={products}
+                  adminInventory={adminInventory}
+                  editingInventoryId={editingInventoryId}
+                  setEditingInventoryId={setEditingInventoryId}
+                  editingInventoryQty={editingInventoryQty}
+                  setEditingInventoryQty={setEditingInventoryQty}
+                  createInventory={createInventory}
+                  addStock={addStock}
+                  reduceStock={reduceStock}
+                  fetchAdminInventory={fetchAdminInventory}
+                />
+              )}
+
+              {adminTab === 'customers' && (
+                <AdminCustomers
+                  selectedCustomer={selectedCustomer}
+                  setSelectedCustomer={setSelectedCustomer}
+                  adminOrders={adminOrders}
+                  setSelectedOrderForInvoice={setSelectedOrderForInvoice}
+                />
+              )}
+
+              {adminTab === 'analytics' && (
+                <AdminAnalytics
+                  adminOrders={adminOrders}
+                  adminInventory={adminInventory}
+                  products={products}
+                />
+              )}
             </div>
-            <span className="brand-tag-sub" style={{ display: 'block', marginBottom: '1.75rem' }}>HAUTE COUTURE</span>
-
-            {view === 'login' && (
-              <LoginView
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPassword={setPassword}
-                loading={loading}
-                error={error}
-                success={success}
-                handleSignInSubmit={handleSignInSubmit}
-                clearMessages={clearMessages}
-                setView={setView}
-              />
-            )}
-
-            {view === 'register' && (
-              <SignUpView
-                name={name}
-                setName={setName}
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPassword={setPassword}
-                confirmPassword={confirmPassword}
-                setConfirmPassword={setConfirmPassword}
-                loading={loading}
-                error={error}
-                handleSignUpSubmit={handleSignUpSubmit}
-                clearMessages={clearMessages}
-                setView={setView}
-              />
-            )}
-
-            {view === 'confirm' && (
-              <ConfirmView
-                email={email}
-                setEmail={setEmail}
-                code={code}
-                setCode={setCode}
-                loading={loading}
-                error={error}
-                success={success}
-                handleConfirmSubmit={handleConfirmSubmit}
-                handleResendCode={handleResendCode}
-                clearMessages={clearMessages}
-                setView={setView}
-              />
-            )}
-
-            {view === 'new_password_required' && (
-              <NewPasswordView
-                newPassword={newPassword}
-                setNewPassword={setNewPassword}
-                confirmNewPassword={confirmNewPassword}
-                setConfirmNewPassword={setConfirmNewPassword}
-                loading={loading}
-                error={error}
-                success={success}
-                handleNewPasswordSubmit={handleNewPasswordSubmit}
-              />
-            )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="auth-container">
+            <div className="auth-card">
+              <div className="brand-logo-center" style={{ marginBottom: '0.2rem' }}>
+                <span className="brand-initial-l">L</span>AURITE
+              </div>
+              <span className="brand-tag-sub" style={{ display: 'block', marginBottom: '1.75rem' }}>HAUTE COUTURE</span>
 
-      {/* Global Top-Level Product Add/Edit Overlay Modal */}
-      <ProductModal
-        isAddingProduct={isAddingProduct}
-        editingProduct={editingProduct}
-        setIsAddingProduct={setIsAddingProduct}
-        setEditingProduct={setEditingProduct}
-        error={error}
-        handleProductFormSubmit={handleProductFormSubmit}
-        productForm={productForm}
-        setProductForm={setProductForm}
-        categories={categories}
-        productImageFile={productImageFile}
-        setProductImageFile={setProductImageFile}
-        cartLoading={cartLoading}
-        cleanS3ImageUrl={cleanS3ImageUrl}
-      />
+              {view === 'login' && (
+                <LoginView
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  loading={loading}
+                  error={error}
+                  success={success}
+                  handleSignInSubmit={handleSignInSubmit}
+                  clearMessages={clearMessages}
+                  setView={setView}
+                />
+              )}
 
-      {/* Global Top-Level Cart Drawer Overlay */}
-      <ShoppingBagDrawer
-        isCartOpen={isCartOpen}
-        setIsCartOpen={setIsCartOpen}
-        cartData={cartData}
-        handleUpdateQuantity={handleUpdateQuantity}
-        handleRemoveItem={handleRemoveItem}
-        cartLoading={cartLoading}
-        cartSubtotal={cartSubtotal}
-        handleCheckout={handleCheckout}
-      />
+              {view === 'register' && (
+                <SignUpView
+                  name={name}
+                  setName={setName}
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  confirmPassword={confirmPassword}
+                  setConfirmPassword={setConfirmPassword}
+                  loading={loading}
+                  error={error}
+                  handleSignUpSubmit={handleSignUpSubmit}
+                  clearMessages={clearMessages}
+                  setView={setView}
+                />
+              )}
 
-      {/* Global Top-Level Invoice Overlay Modal */}
-      <InvoiceModal
-        selectedOrderForInvoice={selectedOrderForInvoice}
-        setSelectedOrderForInvoice={setSelectedOrderForInvoice}
-      />
+              {view === 'confirm' && (
+                <ConfirmView
+                  email={email}
+                  setEmail={setEmail}
+                  code={code}
+                  setCode={setCode}
+                  loading={loading}
+                  error={error}
+                  success={success}
+                  handleConfirmSubmit={handleConfirmSubmit}
+                  handleResendCode={handleResendCode}
+                  clearMessages={clearMessages}
+                  setView={setView}
+                />
+              )}
+
+              {view === 'new_password_required' && (
+                <NewPasswordView
+                  newPassword={newPassword}
+                  setNewPassword={setNewPassword}
+                  confirmNewPassword={confirmNewPassword}
+                  setConfirmNewPassword={setConfirmNewPassword}
+                  loading={loading}
+                  error={error}
+                  success={success}
+                  handleNewPasswordSubmit={handleNewPasswordSubmit}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="app-modals">
+        {/* Global Top-Level Product Add/Edit Overlay Modal */}
+        <ProductModal
+          isAddingProduct={isAddingProduct}
+          editingProduct={editingProduct}
+          setIsAddingProduct={setIsAddingProduct}
+          setEditingProduct={setEditingProduct}
+          error={error}
+          handleProductFormSubmit={handleProductFormSubmit}
+          productForm={productForm}
+          setProductForm={setProductForm}
+          categories={categories}
+          productImageFile={productImageFile}
+          setProductImageFile={setProductImageFile}
+          cartLoading={cartLoading}
+          cleanS3ImageUrl={cleanS3ImageUrl}
+        />
+
+        {/* Global Top-Level Cart Drawer Overlay */}
+        <ShoppingBagDrawer
+          isCartOpen={isCartOpen}
+          setIsCartOpen={setIsCartOpen}
+          cartData={cartData}
+          handleUpdateQuantity={handleUpdateQuantity}
+          handleRemoveItem={handleRemoveItem}
+          cartLoading={cartLoading}
+          cartSubtotal={cartSubtotal}
+          handleCheckout={handleCheckout}
+        />
+
+        {/* Global Top-Level Invoice Overlay Modal */}
+        <InvoiceModal
+          selectedOrderForInvoice={selectedOrderForInvoice}
+          setSelectedOrderForInvoice={setSelectedOrderForInvoice}
+        />
+      </div>
     </div>
   );
 }

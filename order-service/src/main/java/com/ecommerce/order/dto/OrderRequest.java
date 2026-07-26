@@ -16,6 +16,7 @@ public class OrderRequest {
 
     private String userId;
     private List<OrderItemRequest> items;
+    private String paymentMode;
 
     public OrderRequest() {
     }
@@ -34,5 +35,13 @@ public class OrderRequest {
 
     public void setItems(List<OrderItemRequest> items) {
         this.items = items;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 }

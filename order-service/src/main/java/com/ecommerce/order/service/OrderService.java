@@ -71,6 +71,7 @@ public class OrderService {
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
         order.setStatus("PLACED");
+        order.setPaymentMode(request.getPaymentMode() != null ? request.getPaymentMode().toUpperCase() : "COD");
         order.setCreatedAt(now);
         order.setUpdatedAt(now);
 

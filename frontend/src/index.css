@@ -798,3 +798,61 @@ html {
   .benefits-bar { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: 1fr; }
 }
+
+/* Spinner for buttons */
+.spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 2px solid #fff;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Print Invoice Styles */
+@media print {
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: white;
+  }
+  .app-main-content {
+    display: none !important;
+  }
+  .modal-overlay-backdrop {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: transparent !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+  .invoice-modal-card {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 700px !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 2rem !important;
+  }
+  .invoice-modal-card button {
+    display: none !important;
+  }
+  @page {
+    margin: 0.5cm;
+  }
+}

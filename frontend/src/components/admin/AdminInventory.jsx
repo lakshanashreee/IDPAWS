@@ -8,6 +8,7 @@ export default function AdminInventory({
   setEditingInventoryId,
   editingInventoryQty,
   setEditingInventoryQty,
+  createInventory,
   addStock,
   reduceStock,
   fetchAdminInventory
@@ -71,10 +72,21 @@ export default function AdminInventory({
                               const q = parseInt(editingInventoryQty);
                               const inv = adminInventory.find(i => i.productId === item.product.productId);
                               const current = inv ? inv.availableQuantity : 0;
-                              if (q > current) {
-                                await addStock(item.product.productId, q - current);
-                              } else if (q < current) {
-                                await reduceStock(item.product.productId, current - q);
+                              
+                              if (!inv) {
+                                // Product is not in inventory table at all yet.
+                                await createInventory({
+                                  productId: item.product.productId,
+                                  availableQuantity: q,
+                                  reservedQuantity: 0,
+                                  lowStockThreshold: 5
+                                });
+                              } else {
+                                if (q > current) {
+                                  await addStock(item.product.productId, q - current);
+                                } else if (q < current) {
+                                  await reduceStock(item.product.productId, current - q);
+                                }
                               }
                               await fetchAdminInventory();
                             } catch(e) { alert('Failed to update: ' + e.message); }
@@ -134,10 +146,20 @@ export default function AdminInventory({
                               const q = parseInt(editingInventoryQty);
                               const inv = adminInventory.find(i => i.productId === item.product.productId);
                               const current = inv ? inv.availableQuantity : 0;
-                              if (q > current) {
-                                await addStock(item.product.productId, q - current);
-                              } else if (q < current) {
-                                await reduceStock(item.product.productId, current - q);
+                              
+                              if (!inv) {
+                                await createInventory({
+                                  productId: item.product.productId,
+                                  availableQuantity: q,
+                                  reservedQuantity: 0,
+                                  lowStockThreshold: 5
+                                });
+                              } else {
+                                if (q > current) {
+                                  await addStock(item.product.productId, q - current);
+                                } else if (q < current) {
+                                  await reduceStock(item.product.productId, current - q);
+                                }
                               }
                               await fetchAdminInventory();
                             } catch(e) { alert('Failed to update: ' + e.message); }
