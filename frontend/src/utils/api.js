@@ -151,6 +151,21 @@ export async function getUserOrders(userId) {
   return request(`/orders/user/${userId}`, { method: 'GET', suppressLogout: true });
 }
 
+// ----------------------------------------------------
+// USER PROFILE SERVICE
+// ----------------------------------------------------
+export async function getUserProfile(userId) {
+  return request(`/users/${userId}`, { method: 'GET', suppressLogout: true });
+}
+
+export async function updateUserProfile(userId, profileData) {
+  return request(`/users/${userId}`, {
+    method: 'PUT',
+    suppressLogout: true,
+    body: JSON.stringify(profileData)
+  });
+}
+
 export async function getAllOrders() {
   return request('/orders', { method: 'GET' });
 }

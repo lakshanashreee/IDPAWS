@@ -1,0 +1,10 @@
+com\ecommerce\user\handler\UserProfileHandler.class
+com\ecommerce\common\security\UserContext.class
+com\ecommerce\user\dto\ApiResponse.class
+com\ecommerce\user\model\Address.class
+com\ecommerce\user\util\ResponseUtil.class
+com\ecommerce\user\util\JsonUtil.class
+com\ecommerce\common\security\UnauthorizedException.class
+com\ecommerce\common\security\AuthorizationUtil.class
+com\ecommerce\common\security\ForbiddenException.class
+com\ecommerce\user\model\UserProfile.class

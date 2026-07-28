@@ -33,6 +33,15 @@ export default function CustomerHeader({
         <div className="header-right">
           <button 
             type="button" 
+            className={`category-pill-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+            style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem' }}
+          >
+            <IconUser /> Profile
+          </button>
+
+          <button 
+            type="button" 
             className={`category-pill-btn ${activeTab === 'orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('orders')}
             style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem' }}

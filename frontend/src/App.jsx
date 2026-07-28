@@ -45,6 +45,8 @@ import ProductCatalogue from './components/customer/ProductCatalogue';
 import CustomerOrders from './components/customer/CustomerOrders';
 import ShoppingBagDrawer from './components/customer/ShoppingBagDrawer';
 import CheckoutView from './components/customer/CheckoutView';
+import LandingPage from './components/customer/LandingPage';
+import CustomerProfile from './components/customer/CustomerProfile';
 
 // Admin Components
 import AdminHeader from './components/admin/AdminHeader';
@@ -54,8 +56,8 @@ import AdminCustomers from './components/admin/AdminCustomers';
 import AdminAnalytics from './components/admin/AdminAnalytics';
 
 function App() {
-  // Navigation states: 'login' | 'register' | 'confirm' | 'new_password_required' | 'customer_hub' | 'admin_hub' | 'checkout'
-  const [view, setView] = useState('login');
+  // Navigation states: 'landing' | 'login' | 'register' | 'confirm' | 'new_password_required' | 'customer_hub' | 'admin_hub' | 'checkout'
+  const [view, setView] = useState('landing');
   
   // Input states
   const [email, setEmail] = useState('');
@@ -670,6 +672,7 @@ function App() {
               isCartOpen={isCartOpen}
               setIsCartOpen={setIsCartOpen}
               cartData={cartData}
+              cartTotalQuantity={cartTotalQuantity}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
@@ -689,6 +692,8 @@ function App() {
                   handleAddToCart={handleAddToCart}
                   cartLoading={cartLoading}
                   fetchProducts={fetchProducts}
+                  filteredProducts={filteredProducts}
+                  adminInventory={adminInventory}
                 />
               </>
             )}
@@ -703,9 +708,14 @@ function App() {
                 setSelectedOrderForInvoice={setSelectedOrderForInvoice}
               />
             )}
+
+            {activeTab === 'profile' && (
+              <CustomerProfile userSession={userSession} />
+            )}
           </>
         ) : view === 'checkout' && userSession ? (
           <CheckoutView
+            userSession={userSession}
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
             cardDetails={cardDetails}
@@ -773,6 +783,8 @@ function App() {
               )}
             </div>
           </div>
+        ) : view === 'landing' ? (
+          <LandingPage setView={setView} />
         ) : (
           <div className="auth-container">
             <div className="auth-card">

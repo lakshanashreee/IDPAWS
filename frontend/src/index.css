@@ -160,6 +160,30 @@ html {
   gap: 0.75rem;
 }
 
+/* Premium Form Inputs */
+.premium-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #f8f7f5;
+  border: 1px solid rgba(212, 197, 185, 0.6);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.premium-input:focus {
+  background: #ffffff;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
+}
+
+.premium-input::placeholder {
+  color: #a39d98;
+}
+
 /* LAURITE Brand Center Header Logo */
 .brand-logo-center {
   font-family: var(--font-serif);
