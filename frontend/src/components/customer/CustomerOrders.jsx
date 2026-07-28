@@ -34,7 +34,7 @@ export default function CustomerOrders({
         <div className="empty-state" style={{ background: '#fff', borderRadius: '24px', padding: '4rem 1rem', textAlign: 'center', border: '1px solid rgba(212,197,185,0.4)' }}>
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>No Orders Found</h3>
           <p style={{ color: 'var(--text-muted)' }}>You haven't placed any orders yet.</p>
-          <button type="button" className="btn-primary btn-gold" onClick={() => setActiveTab('storefront')} style={{ marginTop: '1.5rem', width: 'auto', padding: '0.75rem 2rem' }}>
+          <button type="button" className="btn-primary btn-gold" onClick={() => setActiveTab('catalog')} style={{ marginTop: '1.5rem', width: 'auto', padding: '0.75rem 2rem' }}>
             Explore Catalog →
           </button>
         </div>

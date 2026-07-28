@@ -5,51 +5,21 @@ export default function ProductCatalogue({
   products = [],
   searchQuery,
   setSearchQuery,
-  categories,
+  categories = [],
   selectedCategory,
   setSelectedCategory,
   storefrontLoading,
   storefrontError,
   fetchProducts,
-  filteredProducts = [],
-  adminInventory,
+  filteredProducts,
+  adminInventory = [],
   handleAddToCart,
   cartLoading
 }) {
+  const displayProducts = filteredProducts !== undefined ? filteredProducts : products;
+
   return (
     <>
-      {/* Benefits / Trust Badges Bar */}
-      <section className="benefits-bar reveal-on-scroll screen-container">
-        <div className="benefit-card">
-          <div className="benefit-icon"><IconBag /></div>
-          <div>
-            <div className="benefit-title">Complimentary Shipping</div>
-            <div className="benefit-desc">On orders over ₹1,500 worldwide</div>
-          </div>
-        </div>
-        <div className="benefit-card">
-          <div className="benefit-icon"><IconRefresh /></div>
-          <div>
-            <div className="benefit-title">30-Day Returns</div>
-            <div className="benefit-desc">Seamless exchanges & refunds</div>
-          </div>
-        </div>
-        <div className="benefit-card">
-          <div className="benefit-icon"><IconInvoice /></div>
-          <div>
-            <div className="benefit-title">100% Protected</div>
-            <div className="benefit-desc">Bank-grade encrypted checkout</div>
-          </div>
-        </div>
-        <div className="benefit-card">
-          <div className="benefit-icon"><IconUser /></div>
-          <div>
-            <div className="benefit-title">24/7 Concierge</div>
-            <div className="benefit-desc">Dedicated luxury support</div>
-          </div>
-        </div>
-      </section>
-
       {/* Search bar & iOS Category Pills */}
       <section className="category-filter-wrapper reveal-on-scroll screen-container" id="catalog-grid-anchor">
         <div className="search-input-box">
@@ -77,11 +47,11 @@ export default function ProductCatalogue({
       </section>
 
       {/* Product Grid */}
-      {storefrontLoading && products.length === 0 ? (
+      {storefrontLoading && displayProducts.length === 0 ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem 0' }}>
           <div className="spinner" style={{ width: '40px', height: '40px' }}></div>
         </div>
-      ) : storefrontError && products.length === 0 ? (
+      ) : storefrontError && displayProducts.length === 0 ? (
         <div className="error-state-card screen-container" style={{ background: '#fff', borderRadius: '24px', padding: '3rem', textAlign: 'center', marginBottom: '4rem' }}>
           <h2 className="error-state-title">Connection Error</h2>
           <p className="error-state-desc" style={{ color: 'var(--text-muted)' }}>{storefrontError}</p>
@@ -89,14 +59,14 @@ export default function ProductCatalogue({
             Retry Fetching Catalog
           </button>
         </div>
-      ) : filteredProducts.length === 0 ? (
+      ) : displayProducts.length === 0 ? (
         <div className="empty-state screen-container" style={{ background: '#fff', borderRadius: '24px', padding: '4rem', textAlign: 'center', marginBottom: '4rem', border: '1px solid rgba(212,197,185,0.4)' }}>
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', marginBottom: '0.5rem' }}>No Products Found</h3>
           <p style={{ color: 'var(--text-muted)' }}>Try modifying your search query or selecting a different category.</p>
         </div>
       ) : (
         <main className="product-grid reveal-on-scroll screen-container">
-          {filteredProducts.map(product => {
+          {displayProducts.map(product => {
             const inv = adminInventory.find(i => i.productId === product.productId);
             const qty = inv ? inv.availableQuantity : null;
             const isLow = qty !== null && qty > 0 && qty <= 5;

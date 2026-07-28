@@ -1,21 +1,75 @@
 import React from 'react';
 
-export default function HeroSection({ selectedCategory, setSelectedCategory }) {
+export default function HeroSection({ onShopNow }) {
+  const handleShopNowClick = () => {
+    if (onShopNow) {
+      onShopNow();
+    } else {
+      const anchor = document.getElementById('catalog-grid-anchor');
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
-    <section className="hero-editorial-section reveal-on-scroll screen-container">
-      <h1 className="hero-heading-editorial">Elevate Your Everyday Style</h1>
-      <p className="hero-subtitle-editorial">Curated luxury collections handcrafted for timeless elegance.</p>
-      {selectedCategory !== 'ALL' && (
-        <div style={{ marginTop: '0.75rem' }}>
-          <button 
-            className="category-pill-btn active" 
-            onClick={() => setSelectedCategory('ALL')}
-            style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}
-          >
-            Filter: {selectedCategory} ✕
+    <div className="home-hero-container screen-container" id="home-top">
+      {/* Main Luxury Hero Section */}
+      <div className="home-hero-grid">
+        <div className="home-hero-content">
+          <h1 className="home-hero-title">
+            <span className="title-row">Timeless</span>
+            <span className="title-row title-gold">Elegance</span>
+            <span className="title-row">Endless You</span>
+          </h1>
+
+          <div className="home-hero-divider">
+            <span className="divider-line"></span>
+            <span className="divider-diamond">✦</span>
+            <span className="divider-line"></span>
+          </div>
+
+          <p className="home-hero-subtitle">Curated luxury for every moment</p>
+
+          <button type="button" className="home-hero-cta-btn" onClick={handleShopNowClick}>
+            SHOP NOW <span className="cta-arrow">→</span>
           </button>
         </div>
-      )}
-    </section>
+
+        <div className="home-hero-image-box">
+          <img 
+            src="/landing_bg.jpg" 
+            alt="LAURITE Haute Couture - Timeless Elegance" 
+            className="home-hero-img"
+          />
+        </div>
+      </div>
+
+      {/* 4 Pillars Bar */}
+      <div className="home-pillars-bar">
+        <div className="home-pillar-item">
+          <div className="pillar-icon">📦</div>
+          <span className="pillar-label">PREMIUM QUALITY</span>
+        </div>
+        <div className="pillar-separator"></div>
+
+        <div className="home-pillar-item">
+          <div className="pillar-icon">🛡️</div>
+          <span className="pillar-label">SECURE PAYMENTS</span>
+        </div>
+        <div className="pillar-separator"></div>
+
+        <div className="home-pillar-item">
+          <div className="pillar-icon">🚚</div>
+          <span className="pillar-label">FAST DELIVERY</span>
+        </div>
+        <div className="pillar-separator"></div>
+
+        <div className="home-pillar-item">
+          <div className="pillar-icon">🎧</div>
+          <span className="pillar-label">24/7 SUPPORT</span>
+        </div>
+      </div>
+    </div>
   );
 }

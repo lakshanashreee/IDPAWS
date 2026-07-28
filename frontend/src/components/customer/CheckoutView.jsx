@@ -96,7 +96,7 @@ export default function CheckoutView({
             <button 
               type="button" 
               className="btn-primary btn-secondary" 
-              onClick={() => { setView('customer_hub'); setActiveTab('storefront'); }}
+              onClick={() => { setView('customer_hub'); setActiveTab('catalog'); }}
               style={{ flex: 1, margin: 0, padding: '0.75rem' }}
             >
               Cancel

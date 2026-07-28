@@ -40,8 +40,11 @@ import NewPasswordView from './components/auth/NewPasswordView';
 
 // Customer Components
 import CustomerHeader from './components/customer/CustomerHeader';
+import LandingPage from './components/customer/LandingPage';
 import HeroSection from './components/customer/HeroSection';
 import ProductCatalogue from './components/customer/ProductCatalogue';
+import AboutView from './components/customer/AboutView';
+import ContactView from './components/customer/ContactView';
 import CustomerOrders from './components/customer/CustomerOrders';
 import ShoppingBagDrawer from './components/customer/ShoppingBagDrawer';
 import CheckoutView from './components/customer/CheckoutView';
@@ -96,7 +99,7 @@ function App() {
   // ----------------------------------------------------
   // ADDITIONAL CUSTOMER HUB STATES (Orders & Checkout)
   // ----------------------------------------------------
-  const [activeTab, setActiveTab] = useState('storefront'); // 'storefront' | 'orders'
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'catalog' | 'orders'
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState('');
@@ -438,10 +441,9 @@ function App() {
   useEffect(() => {
     if (view === 'customer_hub' && userSession) {
       fetchAdminInventory();
-      if (activeTab === 'storefront') {
-        fetchProducts();
-        fetchCart();
-      } else if (activeTab === 'orders') {
+      fetchProducts();
+      fetchCart();
+      if (activeTab === 'orders') {
         fetchOrders();
       }
     }
@@ -540,7 +542,7 @@ function App() {
       setView('admin_hub');
     } else {
       setView('customer_hub');
-      setActiveTab('storefront');
+      setActiveTab('home');
       fetchProducts();
       if (sessionData.payload && sessionData.payload.sub) {
         fetchCart();
@@ -670,27 +672,57 @@ function App() {
               isCartOpen={isCartOpen}
               setIsCartOpen={setIsCartOpen}
               cartData={cartData}
+              cartTotalQuantity={cartTotalQuantity}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
+              onGoHome={() => {
+                setActiveTab('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onGoToCatalog={() => {
+                setActiveTab('catalog');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
-            {activeTab === 'storefront' && (
-              <>
-                <HeroSection />
-                <ProductCatalogue
-                  products={products}
-                  categories={categories}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  storefrontLoading={storefrontLoading}
-                  storefrontError={storefrontError}
-                  handleAddToCart={handleAddToCart}
-                  cartLoading={cartLoading}
-                  fetchProducts={fetchProducts}
-                />
-              </>
+            {activeTab === 'home' && (
+              <HeroSection 
+                onShopNow={() => {
+                  setActiveTab('catalog');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            )}
+
+            {activeTab === 'catalog' && (
+              <ProductCatalogue
+                products={products}
+                filteredProducts={filteredProducts}
+                adminInventory={adminInventory}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                storefrontLoading={storefrontLoading}
+                storefrontError={storefrontError}
+                handleAddToCart={handleAddToCart}
+                cartLoading={cartLoading}
+                fetchProducts={fetchProducts}
+              />
+            )}
+
+            {activeTab === 'about' && (
+              <AboutView 
+                onExploreCatalog={() => {
+                  setActiveTab('catalog');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            )}
+
+            {activeTab === 'contact' && (
+              <ContactView />
             )}
 
             {activeTab === 'orders' && (
