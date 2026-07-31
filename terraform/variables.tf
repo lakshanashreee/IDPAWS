@@ -7,5 +7,5 @@ variable "aws_region" {
 variable "aws_profile" {
   type        = string
   description = "AWS CLI profile"
-  default     = "idp-sbx-trn-lab-01"
+  default     = null
 }
