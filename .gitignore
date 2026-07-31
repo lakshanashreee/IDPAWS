@@ -1,0 +1,8 @@
+# Java
+target/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+terraform/*state*.json
