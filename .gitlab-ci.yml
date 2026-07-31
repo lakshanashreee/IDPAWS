@@ -117,7 +117,9 @@ terraform_plan:
 # -----------------------------------------------------------------------------
 deploy_backend:
   stage: deploy_backend
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   script:
     - echo "Deploying updated code to existing Lambda functions..."
     - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar
@@ -135,7 +137,9 @@ deploy_backend:
 # -----------------------------------------------------------------------------
 deploy_frontend:
   stage: deploy_frontend
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   script:
     - 'echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."'
     - 'aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete'
@@ -147,7 +151,9 @@ deploy_frontend:
 # -----------------------------------------------------------------------------
 cloudfront_invalidation:
   stage: cloudfront_invalidation
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   script:
     - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
     - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
