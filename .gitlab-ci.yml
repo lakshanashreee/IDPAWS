@@ -128,8 +128,7 @@ deploy_backend:
     - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
     - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+    - if: $CI_COMMIT_BRANCH == "terraform"
 
 # -----------------------------------------------------------------------------
 # Stage 8: Deploy Frontend (S3 Upload)
@@ -141,8 +140,7 @@ deploy_frontend:
     - 'echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."'
     - 'aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete'
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+    - if: $CI_COMMIT_BRANCH == "terraform"
 
 # -----------------------------------------------------------------------------
 # Stage 9: CloudFront Invalidation
@@ -154,5 +152,4 @@ cloudfront_invalidation:
     - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
     - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
+    - if: $CI_COMMIT_BRANCH == "terraform"
