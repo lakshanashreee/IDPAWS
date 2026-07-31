@@ -138,8 +138,8 @@ deploy_frontend:
   stage: deploy_frontend
   image: amazon/aws-cli:latest
   script:
-    - echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."
-    - aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete
+    - 'echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."'
+    - 'aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete'
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -151,8 +151,8 @@ cloudfront_invalidation:
   stage: cloudfront_invalidation
   image: amazon/aws-cli:latest
   script:
-    - echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."
-    - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
+    - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
+    - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
