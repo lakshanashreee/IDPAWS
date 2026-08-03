@@ -44,7 +44,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
           <h1 className="landing-title">
             <span className="title-row">Timeless</span>
             <span className="title-row title-gold">Elegance</span>
-            <span className="title-row">Endless Choices</span>
+            <span className="title-row">Endless You</span>
           </h1>
 
           <div className="landing-divider">
@@ -53,7 +53,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
             <span className="divider-line"></span>
           </div>
 
-          <p className="landing-subtitle">Curated collections</p>
+          <p className="landing-subtitle">Curated luxury for every moment.</p>
 
           <button type="button" className="landing-hero-cta" onClick={onShopNow}>
             SHOP NOW <span className="cta-arrow">→</span>
@@ -74,7 +74,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
       <div className="landing-features-bar">
         <div className="landing-feature-item">
           <div className="feature-icon-circle">📦</div>
-          <span className="feature-label">MAJESTIC QUALITY</span>
+          <span className="feature-label">PREMIUM QUALITY</span>
         </div>
         <div className="landing-feature-divider"></div>
 
