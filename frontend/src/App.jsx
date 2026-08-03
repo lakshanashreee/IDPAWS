@@ -686,7 +686,7 @@ function App() {
             />
 
             {activeTab === 'home' && (
-              <HeroSection 
+              <LandingPage 
                 onShopNow={() => {
                   setActiveTab('catalog');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
