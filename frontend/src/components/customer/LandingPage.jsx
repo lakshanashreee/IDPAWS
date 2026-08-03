@@ -2,8 +2,8 @@ import React from 'react';
 import { IconBag, IconRefresh, IconInvoice, IconUser } from '../common/Icons';
 
 export default function LandingPage({ onShopNow, userSession, handleLogout, activeTab, setActiveTab, isCartOpen, setIsCartOpen, cartTotalQuantity, cartData }) {
-  const count = cartTotalQuantity !== undefined 
-    ? cartTotalQuantity 
+  const count = cartTotalQuantity !== undefined
+    ? cartTotalQuantity
     : (cartData?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0);
 
   return (
@@ -44,7 +44,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
           <h1 className="landing-title">
             <span className="title-row">Timeless</span>
             <span className="title-row title-gold">Elegance</span>
-            <span className="title-row">Endless You</span>
+            <span className="title-row">Endless Choices</span>
           </h1>
 
           <div className="landing-divider">
@@ -61,9 +61,9 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
         </div>
 
         <div className="landing-hero-image-wrapper">
-          <img 
-            src="/landing_bg.jpg" 
-            alt="LAURITE Haute Couture - Timeless Elegance" 
+          <img
+            src="/landing_bg.jpg"
+            alt="LAURITE Haute Couture - Timeless Elegance"
             className="landing-hero-img"
           />
           <div className="landing-img-overlay"></div>
