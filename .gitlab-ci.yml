@@ -20,6 +20,7 @@ default:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   AWS_DEFAULT_REGION: "ap-southeast-1"
+  S3_BUCKET_FRONTEND: "l-frontend"
 
 # -----------------------------------------------------------------------------
 # Stage 1: Validate
@@ -68,6 +69,15 @@ test_backend:
   script:
     - echo "Executing Java unit tests..."
     - mvn test
+
+test_frontend:
+  stage: test
+  image: node:20-alpine
+  script:
+    - echo "Executing React unit tests..."
+    - cd frontend
+    - npm ci
+    - npm test
 
 # -----------------------------------------------------------------------------
 # Stage 4: SonarQube
