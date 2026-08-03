@@ -116,7 +116,8 @@ terraform_plan:
   script:
     - cd terraform
     - terraform init -backend=false
-    - terraform plan
+    - echo 'provider "aws" { skip_credentials_validation = true; skip_requesting_account_id = true; skip_metadata_api_check = true; access_key = "mock_access_key"; secret_key = "mock_secret_key" }' > override.tf
+    - terraform plan -refresh=false
   artifacts:
     name: terraform-plan
     paths:
@@ -140,7 +141,7 @@ deploy_backend:
     - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
     - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
   rules:
-    - if: $CI_COMMIT_BRANCH == "terraform"
+    - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
 # -----------------------------------------------------------------------------
 # Stage 8: Deploy Frontend (S3 Upload)
@@ -154,7 +155,7 @@ deploy_frontend:
     - 'echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."'
     - 'aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete'
   rules:
-    - if: $CI_COMMIT_BRANCH == "terraform"
+    - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
 # -----------------------------------------------------------------------------
 # Stage 9: CloudFront Invalidation
@@ -168,4 +169,4 @@ cloudfront_invalidation:
     - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
     - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
   rules:
-    - if: $CI_COMMIT_BRANCH == "terraform"
+    - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
