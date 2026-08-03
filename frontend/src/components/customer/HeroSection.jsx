@@ -20,7 +20,7 @@ export default function HeroSection({ onShopNow }) {
           <h1 className="home-hero-title">
             <span className="title-row">Timeless</span>
             <span className="title-row title-gold">Elegance</span>
-            <span className="title-row">Endless You</span>
+            <span className="title-row">Endless Choices</span>
           </h1>
 
           <div className="home-hero-divider">
@@ -29,7 +29,7 @@ export default function HeroSection({ onShopNow }) {
             <span className="divider-line"></span>
           </div>
 
-          <p className="home-hero-subtitle">Curated luxury for every moment</p>
+          <p className="home-hero-subtitle">Curated collections</p>
 
           <button type="button" className="home-hero-cta-btn" onClick={handleShopNowClick}>
             SHOP NOW <span className="cta-arrow">→</span>
@@ -49,7 +49,7 @@ export default function HeroSection({ onShopNow }) {
       <div className="home-pillars-bar">
         <div className="home-pillar-item">
           <div className="pillar-icon">📦</div>
-          <span className="pillar-label">PREMIUM QUALITY</span>
+          <span className="pillar-label">MAJESTIC QUALITY</span>
         </div>
         <div className="pillar-separator"></div>
 
