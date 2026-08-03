@@ -20,7 +20,6 @@ default:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   AWS_DEFAULT_REGION: "ap-southeast-1"
-  S3_BUCKET_FRONTEND: "l-frontend"
 
 # -----------------------------------------------------------------------------
 # Stage 1: Validate
@@ -151,8 +150,8 @@ deploy_frontend:
     name: amazon/aws-cli:latest
     entrypoint: [""]
   script:
-    - 'echo "Syncing dist/ directory to existing S3 bucket: ${S3_BUCKET_FRONTEND}..."'
-    - 'aws s3 sync frontend/dist/ s3://${S3_BUCKET_FRONTEND}/ --delete'
+    - 'echo "Syncing dist/ directory to existing S3 bucket: l-frontend..."'
+    - 'aws s3 sync frontend/dist/ s3://l-frontend/ --delete'
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
