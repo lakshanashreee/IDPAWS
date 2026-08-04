@@ -5,7 +5,6 @@ import com.ecommerce.order.dto.OrderRequest;
 import com.ecommerce.order.dto.OrderResponse;
 import com.ecommerce.order.exception.OrderNotFoundException;
 import com.ecommerce.order.model.Order;
-import com.ecommerce.order.model.OrderItem;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.util.SnsPublisher;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

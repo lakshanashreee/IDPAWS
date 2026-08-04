@@ -36,8 +36,6 @@ public class S3ImageService {
     );
     /** Pre-signed URL validity window – 5 minutes is more than enough. */
     private static final Duration PRESIGN_TTL = Duration.ofMinutes(5);
-    /** Maximum allowed raw file size that a pre-signed URL will accept (10 MB). */
-    private static final long MAX_CONTENT_LENGTH = 10 * 1024 * 1024L;
 
     private final String bucketName;
     private final String region;
