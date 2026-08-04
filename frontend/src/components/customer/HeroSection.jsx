@@ -14,7 +14,7 @@ export default function HeroSection({ onShopNow }) {
 
   return (
     <div className="home-hero-container screen-container" id="home-top">
-      {/* Main Luxury Hero Section */}
+      {}
       <div className="home-hero-grid">
         <div className="home-hero-content">
           <h1 className="home-hero-title">
