@@ -85,11 +85,10 @@ sonarqube_analysis:
   stage: sonarqube
   script:
     - echo "Running SonarQube static code analysis..."
-    - mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
+    - mvn compile sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
   allow_failure: true
-  only:
-    - main
-    - master
+  rules:
+    - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
 # -----------------------------------------------------------------------------
 # Stage 5: Terraform Validate
