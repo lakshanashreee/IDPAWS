@@ -2,9 +2,13 @@ stages:
   - validate
   - build
   - test
-  - security_and_infra
-  - deploy
-  - post_deploy
+  - sonarqube
+  - snyk
+  - terraform_validate
+  - terraform_plan
+  - deploy_backend
+  - deploy_frontend
+  - cloudfront_invalidation
 
 default:
   image: maven:3.9.6-eclipse-temurin-21
@@ -13,10 +17,12 @@ default:
     paths:
       - .m2/repository
       - frontend/node_modules/
+      - .terraform.d/plugin-cache
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   AWS_DEFAULT_REGION: "ap-southeast-1"
+  TF_PLUGIN_CACHE_DIR: "$CI_PROJECT_DIR/.terraform.d/plugin-cache"
 
 # -----------------------------------------------------------------------------
 # Stage 1: Validate
@@ -25,7 +31,7 @@ validate:
   stage: validate
   script:
     - echo "Validating Java Maven project configuration..."
-    - mvn validate
+    - mvn -T 1C validate
 
 # -----------------------------------------------------------------------------
 # Stage 2: Build
@@ -34,7 +40,7 @@ build_backend:
   stage: build
   script:
     - echo "Building Java 21 Microservices JARs..."
-    - mvn clean package -DskipTests
+    - mvn -T 1C clean package -DskipTests
   artifacts:
     paths:
       - product-service/target/*.jar
@@ -50,7 +56,7 @@ build_frontend:
   script:
     - echo "Building React + Vite frontend application..."
     - cd frontend
-    - npm ci
+    - npm ci --prefer-offline --no-audit
     - npm run build
   artifacts:
     paths:
@@ -64,7 +70,7 @@ test_backend:
   stage: test
   script:
     - echo "Executing Java unit tests..."
-    - mvn test
+    - mvn -T 1C test
 
 test_frontend:
   stage: test
@@ -72,14 +78,14 @@ test_frontend:
   script:
     - echo "Executing React unit tests..."
     - cd frontend
-    - npm ci
+    - npm ci --prefer-offline --no-audit
     - npm test
 
 # -----------------------------------------------------------------------------
 # Stage 4: SonarQube
 # -----------------------------------------------------------------------------
 sonarqube_analysis:
-  stage: security_and_infra
+  stage: sonarqube
   script:
     - echo "Running SonarQube static code analysis..."
     - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
@@ -91,14 +97,9 @@ sonarqube_analysis:
 # Stage 4.5: Snyk
 # -----------------------------------------------------------------------------
 snyk_analysis:
-  stage: security_and_infra
+  stage: snyk
   image: maven:3.9.6-eclipse-temurin-21
   script:
-    - |
-      if [ -z "$SNYK_TOKEN" ]; then
-        echo "SNYK_TOKEN is not set or empty. Please add it to your GitLab CI/CD Variables. Skipping Snyk scan..."
-        exit 0
-      fi
     - echo "Downloading Snyk CLI..."
     - curl -Lo /usr/local/bin/snyk "https://static.snyk.io/cli/latest/snyk-linux"
     - chmod +x /usr/local/bin/snyk
@@ -116,12 +117,13 @@ snyk_analysis:
 # Stage 5: Terraform Validate
 # -----------------------------------------------------------------------------
 terraform_validate:
-  stage: security_and_infra
+  stage: terraform_validate
   image:
     name: hashicorp/terraform:1.10
     entrypoint: [""]
   script:
     - cd terraform
+    - mkdir -p $TF_PLUGIN_CACHE_DIR
     - terraform init -backend=false
     - terraform validate
 
@@ -129,14 +131,15 @@ terraform_validate:
 # Stage 6: Terraform Plan
 # -----------------------------------------------------------------------------
 terraform_plan:
-  stage: security_and_infra
+  stage: terraform_plan
   image:
     name: hashicorp/terraform:1.10
     entrypoint: [""]
   script:
     - cd terraform
+    - mkdir -p $TF_PLUGIN_CACHE_DIR
     - terraform init -backend=false
-    - terraform plan
+    - terraform plan -parallelism=30
   artifacts:
     name: terraform-plan
     paths:
@@ -146,12 +149,12 @@ terraform_plan:
 # Stage 7: Deploy Backend (Lambda Update)
 # -----------------------------------------------------------------------------
 deploy_backend:
-  stage: deploy
+  stage: deploy_backend
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
   script:
-    - echo "Deploying updated code to existing Lambda functions in parallel..."
+    - echo "Deploying updated code to existing Lambda functions simultaneously..."
     - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar &
     - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
     - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
@@ -160,7 +163,6 @@ deploy_backend:
     - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
     - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
     - wait
-    - echo "All backend lambdas deployed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
@@ -168,7 +170,7 @@ deploy_backend:
 # Stage 8: Deploy Frontend (S3 Upload)
 # -----------------------------------------------------------------------------
 deploy_frontend:
-  stage: deploy
+  stage: deploy_frontend
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
@@ -182,7 +184,7 @@ deploy_frontend:
 # Stage 9: CloudFront Invalidation
 # -----------------------------------------------------------------------------
 cloudfront_invalidation:
-  stage: post_deploy
+  stage: cloudfront_invalidation
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
