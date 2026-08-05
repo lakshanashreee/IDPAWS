@@ -98,10 +98,11 @@ snyk_analysis:
   stage: snyk
   image: maven:3.9.6-eclipse-temurin-21
   script:
-    - echo "Installing Node.js and Snyk CLI..."
-    - apt-get update && apt-get install -y nodejs npm
-    - npm install -g snyk
-    - snyk auth ${SNYK_TOKEN}
+    - echo "Downloading Snyk CLI..."
+    - curl -Lo /usr/local/bin/snyk "https://static.snyk.io/cli/latest/snyk-linux"
+    - chmod +x /usr/local/bin/snyk
+    - echo "Authenticating with Snyk..."
+    - snyk config set api="${SNYK_TOKEN}"
     - echo "Running Snyk Open Source Scan..."
     - snyk test --all-projects
     - echo "Running Snyk IaC Scan on Terraform..."
