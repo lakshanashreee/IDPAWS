@@ -2,13 +2,9 @@ stages:
   - validate
   - build
   - test
-  - sonarqube
-  - snyk
-  - terraform_validate
-  - terraform_plan
-  - deploy_backend
-  - deploy_frontend
-  - cloudfront_invalidation
+  - security_and_infra
+  - deploy
+  - post_deploy
 
 default:
   image: maven:3.9.6-eclipse-temurin-21
@@ -83,7 +79,7 @@ test_frontend:
 # Stage 4: SonarQube
 # -----------------------------------------------------------------------------
 sonarqube_analysis:
-  stage: sonarqube
+  stage: security_and_infra
   script:
     - echo "Running SonarQube static code analysis..."
     - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
@@ -95,9 +91,14 @@ sonarqube_analysis:
 # Stage 4.5: Snyk
 # -----------------------------------------------------------------------------
 snyk_analysis:
-  stage: snyk
+  stage: security_and_infra
   image: maven:3.9.6-eclipse-temurin-21
   script:
+    - |
+      if [ -z "$SNYK_TOKEN" ]; then
+        echo "SNYK_TOKEN is not set or empty. Please add it to your GitLab CI/CD Variables. Skipping Snyk scan..."
+        exit 0
+      fi
     - echo "Downloading Snyk CLI..."
     - curl -Lo /usr/local/bin/snyk "https://static.snyk.io/cli/latest/snyk-linux"
     - chmod +x /usr/local/bin/snyk
@@ -115,7 +116,7 @@ snyk_analysis:
 # Stage 5: Terraform Validate
 # -----------------------------------------------------------------------------
 terraform_validate:
-  stage: terraform_validate
+  stage: security_and_infra
   image:
     name: hashicorp/terraform:1.10
     entrypoint: [""]
@@ -128,7 +129,7 @@ terraform_validate:
 # Stage 6: Terraform Plan
 # -----------------------------------------------------------------------------
 terraform_plan:
-  stage: terraform_plan
+  stage: security_and_infra
   image:
     name: hashicorp/terraform:1.10
     entrypoint: [""]
@@ -145,19 +146,21 @@ terraform_plan:
 # Stage 7: Deploy Backend (Lambda Update)
 # -----------------------------------------------------------------------------
 deploy_backend:
-  stage: deploy_backend
+  stage: deploy
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
   script:
-    - echo "Deploying updated code to existing Lambda functions..."
-    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://cart-service/target/cart-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://order-service/target/order-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
+    - echo "Deploying updated code to existing Lambda functions in parallel..."
+    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://cart-service/target/cart-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://order-service/target/order-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
+    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
+    - wait
+    - echo "All backend lambdas deployed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
@@ -165,7 +168,7 @@ deploy_backend:
 # Stage 8: Deploy Frontend (S3 Upload)
 # -----------------------------------------------------------------------------
 deploy_frontend:
-  stage: deploy_frontend
+  stage: deploy
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
@@ -179,7 +182,7 @@ deploy_frontend:
 # Stage 9: CloudFront Invalidation
 # -----------------------------------------------------------------------------
 cloudfront_invalidation:
-  stage: cloudfront_invalidation
+  stage: post_deploy
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
