@@ -1,990 +1,390 @@
 resource "aws_sns_topic" "cloudwatch_alarms" {
-  name = "Laurite_Production_Alarms"
+  name = "L_Production_Alarms"
   tags = {
     ApplicationService = "test"
     CostCentre         = "test"
   }
 }
 
+resource "aws_sns_topic_subscription" "email_alerts" {
+  topic_arn = aws_sns_topic.cloudwatch_alarms.arn
+  protocol  = "email"
+  endpoint  = "lakshanalakshu2408@gmail.com"
+}
+
 resource "aws_cloudwatch_dashboard" "production_dashboard" {
   dashboard_name = "Laurite_Production_Dashboard"
 
-    dashboard_body = jsonencode({
-  "widgets": [
-    {
-      "type": "text",
-      "x": 0,
-      "y": 0,
-      "width": 24,
-      "height": 1,
-      "properties": {
-        "markdown": "\n# CloudFront\n"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 1,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/CloudFront",
-            "Requests",
-            "DistributionId",
-            "E3O1NXIGXU666Q",
-            "Region",
-            "Global"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "CloudFront Requests"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 1,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/CloudFront",
-            "CacheHitRate",
-            "DistributionId",
-            "E3O1NXIGXU666Q",
-            "Region",
-            "Global"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "CloudFront Cache Hit Rate"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 1,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/CloudFront",
-            "OriginLatency",
-            "DistributionId",
-            "E3O1NXIGXU666Q",
-            "Region",
-            "Global"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "CloudFront Origin Latency"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 7,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/CloudFront",
-            "4xxErrorRate",
-            "DistributionId",
-            "E3O1NXIGXU666Q",
-            "Region",
-            "Global"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "CloudFront 4XX Errors"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 7,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/CloudFront",
-            "5xxErrorRate",
-            "DistributionId",
-            "E3O1NXIGXU666Q",
-            "Region",
-            "Global"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "CloudFront 5XX Errors"
-      }
-    },
-    {
-      "type": "text",
-      "x": 0,
-      "y": 13,
-      "width": 24,
-      "height": 1,
-      "properties": {
-        "markdown": "\n# API Gateway\n"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 14,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/ApiGateway",
-            "Count",
-            "ApiName",
-            "L_ECommerceAPI"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "Request Count"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 14,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/ApiGateway",
-            "Latency",
-            "ApiName",
-            "L_ECommerceAPI"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "Latency"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 14,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/ApiGateway",
-            "IntegrationLatency",
-            "ApiName",
-            "L_ECommerceAPI"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "Integration Latency"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 20,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/ApiGateway",
-            "4XXError",
-            "ApiName",
-            "L_ECommerceAPI"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "4XX Errors"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 20,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/ApiGateway",
-            "5XXError",
-            "ApiName",
-            "L_ECommerceAPI"
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "5XX Errors"
-      }
-    },
-    {
-      "type": "text",
-      "x": 0,
-      "y": 26,
-      "width": 24,
-      "height": 1,
-      "properties": {
-        "markdown": "\n# Lambda\n"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 27,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Lambda",
-            "Invocations",
-            "FunctionName",
-            "L_ProductService"
-          ],
-          [
-            ".",
-            "Errors",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Duration",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Throttles",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_ProductService Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 27,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Lambda",
-            "Invocations",
-            "FunctionName",
-            "L_InventoryService"
-          ],
-          [
-            ".",
-            "Errors",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Duration",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Throttles",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_InventoryService Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 27,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Lambda",
-            "Invocations",
-            "FunctionName",
-            "L_CartService"
-          ],
-          [
-            ".",
-            "Errors",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Duration",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Throttles",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_CartService Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 33,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Lambda",
-            "Invocations",
-            "FunctionName",
-            "L_OrderService"
-          ],
-          [
-            ".",
-            "Errors",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Duration",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Throttles",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_OrderService Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 33,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Lambda",
-            "Invocations",
-            "FunctionName",
-            "L_PaymentService"
-          ],
-          [
-            ".",
-            "Errors",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Duration",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "Throttles",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_PaymentService Metrics"
-      }
-    },
-    {
-      "type": "text",
-      "x": 0,
-      "y": 39,
-      "width": 24,
-      "height": 1,
-      "properties": {
-        "markdown": "\n# DynamoDB\n"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 40,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/DynamoDB",
-            "ConsumedReadCapacityUnits",
-            "TableName",
-            "L_ProductTable"
-          ],
-          [
-            ".",
-            "ConsumedWriteCapacityUnits",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "SuccessfulRequestLatency",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "ThrottledRequests",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_ProductTable Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 40,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/DynamoDB",
-            "ConsumedReadCapacityUnits",
-            "TableName",
-            "L_InventoryTable"
-          ],
-          [
-            ".",
-            "ConsumedWriteCapacityUnits",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "SuccessfulRequestLatency",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "ThrottledRequests",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_InventoryTable Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 40,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/DynamoDB",
-            "ConsumedReadCapacityUnits",
-            "TableName",
-            "L_CartTable"
-          ],
-          [
-            ".",
-            "ConsumedWriteCapacityUnits",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "SuccessfulRequestLatency",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "ThrottledRequests",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_CartTable Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 46,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/DynamoDB",
-            "ConsumedReadCapacityUnits",
-            "TableName",
-            "L_OrderTable"
-          ],
-          [
-            ".",
-            "ConsumedWriteCapacityUnits",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "SuccessfulRequestLatency",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "ThrottledRequests",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_OrderTable Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 46,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/DynamoDB",
-            "ConsumedReadCapacityUnits",
-            "TableName",
-            "L_PaymentTable"
-          ],
-          [
-            ".",
-            "ConsumedWriteCapacityUnits",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "SuccessfulRequestLatency",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "ThrottledRequests",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_PaymentTable Metrics"
-      }
-    },
-    {
-      "type": "text",
-      "x": 0,
-      "y": 52,
-      "width": 24,
-      "height": 1,
-      "properties": {
-        "markdown": "\n# SQS\n"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 53,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_CartQueue"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_CartQueue Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 53,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_CartQueue_DLQ"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_CartQueue_DLQ Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 53,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_InventoryQueue"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_InventoryQueue Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 59,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_InventoryQueue_DLQ"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_InventoryQueue_DLQ Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 8,
-      "y": 59,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_OrderPaymentUpdateQueue"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_OrderPaymentUpdateQueue Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 16,
-      "y": 59,
-      "width": 8,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_OrderPaymentUpdateQueue_DLQ"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_OrderPaymentUpdateQueue_DLQ Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 65,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_PaymentQueue"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_PaymentQueue Metrics"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 65,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/SQS",
-            "ApproximateNumberOfMessagesVisible",
-            "QueueName",
-            "L_PaymentQueue_DLQ"
-          ],
-          [
-            ".",
-            "ApproximateAgeOfOldestMessage",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesSent",
-            ".",
-            "."
-          ],
-          [
-            ".",
-            "NumberOfMessagesReceived",
-            ".",
-            "."
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": var.aws_region,
-        "title": "L_PaymentQueue_DLQ Metrics"
-      }
-    }
-  ]
-})
+    dashboard_body = <<EOF
+{
+    "widgets": [
+        {
+            "type": "text",
+            "x": 0,
+            "y": 0,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# CloudFront\n"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 1,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/CloudFront", "Requests", "DistributionId", "E3O1NXIGXU666Q", "Region", "Global" ]
+                ],
+                "region": "us-east-1",
+                "stacked": false,
+                "title": "CloudFront Requests",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 1,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/CloudFront", "4xxErrorRate", "DistributionId", "E3O1NXIGXU666Q", "Region", "Global" ]
+                ],
+                "region": "us-east-1",
+                "stacked": false,
+                "title": "CloudFront 4XX Errors",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 1,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/CloudFront", "5xxErrorRate", "DistributionId", "E3O1NXIGXU666Q", "Region", "Global" ]
+                ],
+                "region": "us-east-1",
+                "stacked": false,
+                "title": "CloudFront 5XX Errors",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "text",
+            "x": 0,
+            "y": 7,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# API Gateway\n"
+            }
+        },
+        {
+            "type": "text",
+            "x": 0,
+            "y": 11,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# Lambda\n"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 12,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "L_ProductService" ],
+                    [ ".", "Errors", ".", "." ],
+                    [ ".", "Duration", ".", "." ],
+                    [ ".", "Throttles", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_ProductService Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 12,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "L_InventoryService" ],
+                    [ ".", "Errors", ".", "." ],
+                    [ ".", "Duration", ".", "." ],
+                    [ ".", "Throttles", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_InventoryService Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 12,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "L_CartService" ],
+                    [ ".", "Errors", ".", "." ],
+                    [ ".", "Duration", ".", "." ],
+                    [ ".", "Throttles", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_CartService Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "L_OrderService" ],
+                    [ ".", "Errors", ".", "." ],
+                    [ ".", "Duration", ".", "." ],
+                    [ ".", "Throttles", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_OrderService Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 18,
+            "width": 12,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "L_PaymentService" ],
+                    [ ".", "Errors", ".", "." ],
+                    [ ".", "Duration", ".", "." ],
+                    [ ".", "Throttles", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_PaymentService Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "text",
+            "x": 0,
+            "y": 24,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# DynamoDB\n"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 25,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "L_ProductTable" ],
+                    [ ".", "ConsumedWriteCapacityUnits", ".", "." ],
+                    [ ".", "SuccessfulRequestLatency", ".", "." ],
+                    [ ".", "ThrottledRequests", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_ProductTable Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 25,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "L_InventoryTable" ],
+                    [ ".", "ConsumedWriteCapacityUnits", ".", "." ],
+                    [ ".", "SuccessfulRequestLatency", ".", "." ],
+                    [ ".", "ThrottledRequests", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_InventoryTable Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 25,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "L_CartTable" ],
+                    [ ".", "ConsumedWriteCapacityUnits", ".", "." ],
+                    [ ".", "SuccessfulRequestLatency", ".", "." ],
+                    [ ".", "ThrottledRequests", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_CartTable Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 31,
+            "width": 12,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "L_OrderTable" ],
+                    [ ".", "ConsumedWriteCapacityUnits", ".", "." ],
+                    [ ".", "SuccessfulRequestLatency", ".", "." ],
+                    [ ".", "ThrottledRequests", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_OrderTable Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 31,
+            "width": 12,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "L_PaymentTable" ],
+                    [ ".", "ConsumedWriteCapacityUnits", ".", "." ],
+                    [ ".", "SuccessfulRequestLatency", ".", "." ],
+                    [ ".", "ThrottledRequests", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_PaymentTable Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "text",
+            "x": 0,
+            "y": 37,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# SQS\n"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 38,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "L_CartQueue" ],
+                    [ ".", "ApproximateAgeOfOldestMessage", ".", "." ],
+                    [ ".", "NumberOfMessagesSent", ".", "." ],
+                    [ ".", "NumberOfMessagesReceived", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_CartQueue Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 38,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "L_InventoryQueue" ],
+                    [ ".", "ApproximateAgeOfOldestMessage", ".", "." ],
+                    [ ".", "NumberOfMessagesSent", ".", "." ],
+                    [ ".", "NumberOfMessagesReceived", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_InventoryQueue Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 38,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "L_PaymentQueue" ],
+                    [ ".", "ApproximateAgeOfOldestMessage", ".", "." ],
+                    [ ".", "NumberOfMessagesSent", ".", "." ],
+                    [ ".", "NumberOfMessagesReceived", ".", "." ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "L_PaymentQueue Metrics",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 8,
+            "width": 24,
+            "height": 3,
+            "properties": {
+                "view": "singleValue",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/ApiGateway", "4xx", "ApiId", "zq1dj3ag6d" ],
+                    [ ".", "IntegrationLatency", ".", "." ],
+                    [ ".", "Latency", ".", "." ],
+                    [ ".", "5xx", ".", "." ],
+                    [ ".", "Count", ".", "." ]
+                ],
+                "region": "ap-southeast-1"
+            }
+        }
+    ]
+}
+EOF
 }
 
 # -------------------------------------------------------------------------
