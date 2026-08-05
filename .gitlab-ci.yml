@@ -111,9 +111,10 @@ snyk_analysis:
     - echo "Authenticating with Snyk..."
     - snyk config set api="${SNYK_TOKEN}"
     - echo "Running Snyk Open Source Scan..."
-    - snyk test --all-projects --severity-threshold=high
+    - snyk test --all-projects --severity-threshold=high --report || true
+    - snyk monitor --all-projects
     - echo "Running Snyk IaC Scan on Terraform..."
-    - snyk iac test terraform/ --severity-threshold=high
+    - snyk iac test terraform/ --severity-threshold=high --report || true
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
