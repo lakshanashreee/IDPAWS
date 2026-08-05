@@ -85,7 +85,7 @@ sonarqube_analysis:
   stage: sonarqube
   script:
     - echo "Running SonarQube static code analysis..."
-    - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
+    - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${SONAR_TOKEN}
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
