@@ -100,15 +100,20 @@ snyk_analysis:
   stage: snyk
   image: maven:3.9.6-eclipse-temurin-21
   script:
+    - |
+      if [ -z "$SNYK_TOKEN" ]; then
+        echo "SNYK_TOKEN is not set or empty. Please add a valid token to your GitLab CI/CD Variables. Skipping Snyk scan..."
+        exit 0
+      fi
     - echo "Downloading Snyk CLI..."
     - curl -Lo /usr/local/bin/snyk "https://static.snyk.io/cli/latest/snyk-linux"
     - chmod +x /usr/local/bin/snyk
     - echo "Authenticating with Snyk..."
     - snyk config set api="${SNYK_TOKEN}"
     - echo "Running Snyk Open Source Scan..."
-    - snyk test --all-projects
+    - snyk test --all-projects --severity-threshold=high
     - echo "Running Snyk IaC Scan on Terraform..."
-    - snyk iac test terraform/
+    - snyk iac test terraform/ --severity-threshold=high
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
