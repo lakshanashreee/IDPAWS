@@ -20,7 +20,7 @@
 
         <aws.lambda.core.version>1.2.3</aws.lambda.core.version>
         <aws.lambda.events.version>3.11.4</aws.lambda.events.version>
-        <aws.sdk.v2.version>2.42.41</aws.sdk.v2.version>
+        <aws.sdk.v2.version>2.49.6</aws.sdk.v2.version>
         <jackson.version>2.18.9</jackson.version>
     </properties>
 
