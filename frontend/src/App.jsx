@@ -553,6 +553,18 @@ function App() {
   // Cart & Checkout Handlers
   const handleAddToCart = async (product) => {
     if (!userSession) return;
+    
+    const inv = adminInventory.find(i => i.productId === product.productId);
+    const available = inv ? inv.availableQuantity : 0;
+    const cartItem = cartData?.items?.find(i => i.productId === product.productId);
+    const currentQty = cartItem ? cartItem.quantity : 0;
+    
+    if (currentQty + 1 > available) {
+      setError(`Cannot add more to bag. Only ${available} available in stock.`);
+      window.scrollTo(0, 0);
+      return;
+    }
+
     clearMessages();
     setCartLoading(true);
     try {
@@ -576,6 +588,17 @@ function App() {
   const handleUpdateQuantity = async (productId, currentQuantity, change) => {
     if (!userSession) return;
     const targetQty = currentQuantity + change;
+    
+    if (change > 0) {
+      const inv = adminInventory.find(i => i.productId === productId);
+      const available = inv ? inv.availableQuantity : 0;
+      if (targetQty > available) {
+        setError(`Cannot increase quantity. Only ${available} available in stock.`);
+        window.scrollTo(0, 0);
+        return;
+      }
+    }
+
     if (targetQty <= 0) {
       handleRemoveItem(productId);
       return;
@@ -699,6 +722,7 @@ function App() {
                 products={products}
                 filteredProducts={filteredProducts}
                 adminInventory={adminInventory}
+                cartData={cartData}
                 categories={categories}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
@@ -907,6 +931,7 @@ function App() {
           cartLoading={cartLoading}
           cartSubtotal={cartSubtotal}
           handleCheckout={handleCheckout}
+          adminInventory={adminInventory}
         />
 
         {/* Global Top-Level Invoice Overlay Modal */}

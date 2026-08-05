@@ -13,6 +13,7 @@ export default function ProductCatalogue({
   fetchProducts,
   filteredProducts,
   adminInventory = [],
+  cartData,
   handleAddToCart,
   cartLoading
 }) {
@@ -69,8 +70,13 @@ export default function ProductCatalogue({
           {displayProducts.map(product => {
             const inv = adminInventory.find(i => i.productId === product.productId);
             const qty = inv ? inv.availableQuantity : null;
-            const isLow = qty !== null && qty > 0 && qty <= 5;
+            const threshold = inv && inv.lowStockThreshold !== undefined ? inv.lowStockThreshold : 5;
+            const isLow = qty !== null && qty > 0 && qty <= threshold;
             const isOut = qty !== null && qty === 0;
+            const cartItem = cartData?.items?.find(i => i.productId === product.productId);
+            const currentCartQty = cartItem ? cartItem.quantity : 0;
+            const isMaxReached = qty !== null && currentCartQty >= qty;
+            
             return (
             <div key={product.productId} className="product-card">
               <div className="product-image-container">
@@ -106,6 +112,11 @@ export default function ProductCatalogue({
                 <span className="product-category-label">{product.category || 'General'}</span>
                 <h3 className="product-title">{product.name}</h3>
                 <p className="product-desc">{product.description || 'Exquisite quality product from our signature luxury catalog.'}</p>
+                {isLow && !isOut && (
+                  <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600 }}>
+                    Only {qty} is left
+                  </p>
+                )}
                 
                 <div className="product-footer">
                   <span className="product-price">₹{Number(product.price).toFixed(2)}</span>
@@ -113,10 +124,10 @@ export default function ProductCatalogue({
                     type="button" 
                     className="btn-add-to-cart"
                     onClick={() => handleAddToCart(product)}
-                    disabled={cartLoading || isOut}
-                    style={isOut ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                    disabled={cartLoading || isOut || isMaxReached}
+                    style={(isOut || isMaxReached) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                   >
-                    {isOut ? 'Out of Stock' : 'Add to Bag'}
+                    {isOut ? 'Out of Stock' : isMaxReached ? 'Max Reached' : 'Add to Bag'}
                   </button>
                 </div>
               </div>

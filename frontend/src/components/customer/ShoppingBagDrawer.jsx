@@ -9,9 +9,16 @@ export default function ShoppingBagDrawer({
   handleRemoveItem,
   cartLoading,
   cartSubtotal,
-  handleCheckout
+  handleCheckout,
+  adminInventory = []
 }) {
   if (!isCartOpen) return null;
+
+  const hasInventoryError = cartData?.items?.some(item => {
+    const inv = adminInventory.find(i => i.productId === item.productId);
+    const availableQty = inv ? inv.availableQuantity : 0;
+    return item.quantity > availableQty;
+  });
 
   return (
     <div className="modal-overlay-backdrop" onClick={() => setIsCartOpen(false)}>
@@ -30,18 +37,30 @@ export default function ShoppingBagDrawer({
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Explore our catalog to add luxury items.</p>
             </div>
           ) : (
-            cartData.items.map(item => (
+            cartData.items.map(item => {
+              const inv = adminInventory.find(i => i.productId === item.productId);
+              const availableQty = inv ? inv.availableQuantity : 0;
+              const isMaxReached = item.quantity === availableQty;
+              const isOverStock = item.quantity > availableQty;
+              
+              return (
               <div key={item.productId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: '1px solid rgba(212,197,185,0.3)' }}>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#1c1917' }}>{item.productName}</h4>
                   <span style={{ fontSize: '0.82rem', color: '#57534e' }}>₹{Number(item.price).toFixed(2)} each</span>
+                  {isMaxReached && !isOverStock && (
+                    <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem' }}>(Max available stock reached)</div>
+                  )}
+                  {isOverStock && (
+                    <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem', fontWeight: 'bold' }}>(Out of stock: Only {availableQty} left)</div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', borderRadius: '9999px', padding: '0.2rem 0.6rem' }}>
                     <button type="button" onClick={() => handleUpdateQuantity(item.productId, item.quantity, -1)} disabled={cartLoading} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.2rem 0.4rem', fontWeight: 700 }}>-</button>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, padding: '0 0.4rem', color: '#1c1917' }}>{item.quantity}</span>
-                    <button type="button" onClick={() => handleUpdateQuantity(item.productId, item.quantity, 1)} disabled={cartLoading} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.2rem 0.4rem', fontWeight: 700 }}>+</button>
+                    <button type="button" onClick={() => handleUpdateQuantity(item.productId, item.quantity, 1)} disabled={cartLoading || isMaxReached || isOverStock} style={{ background: 'none', border: 'none', cursor: (isMaxReached || isOverStock) ? 'not-allowed' : 'pointer', padding: '0.2rem 0.4rem', fontWeight: 700, opacity: (isMaxReached || isOverStock) ? 0.4 : 1 }}>+</button>
                   </div>
 
                   <button type="button" onClick={() => handleRemoveItem(item.productId)} disabled={cartLoading} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '0.4rem' }}>
@@ -49,7 +68,7 @@ export default function ShoppingBagDrawer({
                   </button>
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
 
@@ -68,8 +87,8 @@ export default function ShoppingBagDrawer({
               <span>₹{cartSubtotal.toFixed(2)}</span>
             </div>
 
-            <button type="button" className="btn-primary btn-gold" onClick={handleCheckout} disabled={cartLoading} style={{ width: '100%', padding: '0.85rem' }}>
-              {cartLoading ? <div className="spinner"></div> : 'Proceed to Checkout →'}
+            <button type="button" className="btn-primary btn-gold" onClick={handleCheckout} disabled={cartLoading || hasInventoryError} style={{ width: '100%', padding: '0.85rem', opacity: hasInventoryError ? 0.5 : 1, cursor: hasInventoryError ? 'not-allowed' : 'pointer' }}>
+              {cartLoading ? <div className="spinner"></div> : hasInventoryError ? 'Please reduce quantity to proceed' : 'Proceed to Checkout →'}
             </button>
           </div>
         )}
