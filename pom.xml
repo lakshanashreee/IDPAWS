@@ -10,6 +10,11 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <sonar.coverage.exclusions>**/*.java</sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>**/*.java</sonar.cpd.exclusions>
+    </properties>
+
     <modules>
         <module>cart-service</module>
         <module>cognito-trigger-service</module>
