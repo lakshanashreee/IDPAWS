@@ -111,9 +111,9 @@ deploy_backend:
 deploy_frontend:
   stage: deploy
   script:
-    - echo "Syncing dist/ directory to existing S3 bucket: l-frontend..."
-    - aws s3 sync frontend/dist/ s3://l-frontend/ --delete
-    - echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."
-    - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
+    - 'echo "Syncing dist/ directory to existing S3 bucket: l-frontend..."'
+    - 'aws s3 sync frontend/dist/ s3://l-frontend/ --delete'
+    - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
+    - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
