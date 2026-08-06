@@ -21,7 +21,7 @@ export default function InvoiceModal({ selectedOrderForInvoice, setSelectedOrder
         <div style={{ color: '#1c1917', background: '#fff', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(212,197,185,0.4)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
             <div>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', margin: 0, color: '#1c1917' }}>LAURITE HAUTE COUTURE</h1>
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', margin: 0, color: '#1c1917' }}>LAURITE STYLE</h1>
               <p style={{ margin: '0.2rem 0', color: '#57534e', fontSize: '0.82rem' }}>Luxury Global E-Commerce</p>
             </div>
             <div style={{ textAlign: 'right' }}>

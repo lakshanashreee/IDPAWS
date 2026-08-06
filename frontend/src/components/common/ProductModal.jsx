@@ -50,7 +50,7 @@ export default function ProductModal({
               <label htmlFor="prod-cat">Category</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <select
-                  value={categories.includes(productForm.category?.toUpperCase()) ? productForm.category?.toUpperCase() : 'CUSTOM'}
+                  value={categories.some(c => (c.name || c)?.toUpperCase() === productForm.category?.toUpperCase()) ? productForm.category?.toUpperCase() : 'CUSTOM'}
                   onChange={(e) => {
                     if (e.target.value !== 'CUSTOM') {
                       setProductForm({ ...productForm, category: e.target.value });
@@ -59,8 +59,8 @@ export default function ProductModal({
                   style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', background: '#ffffff', border: '1px solid rgba(212,197,185,0.6)', color: 'var(--text-main)', fontSize: '0.88rem', outline: 'none' }}
                 >
                   <option value="CUSTOM">-- Select Existing Category --</option>
-                  {categories.filter(c => c !== 'ALL').map(c => (
-                    <option key={c} value={c}>{c}</option>
+                  {categories.map(c => (
+                    <option key={c.categoryId || c.name || c} value={c.name || c}>{c.name || c}</option>
                   ))}
                 </select>
                 <input
@@ -185,7 +185,7 @@ export default function ProductModal({
                   <img
                     src={productForm.imageUrl}
                     alt="Current Product Image"
-                    style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '8px', objectFit: 'cover' }}
+                    style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '8px', objectFit: 'contain' }}
                     onError={(e) => {
                       const base = cleanS3ImageUrl ? cleanS3ImageUrl(productForm.imageUrl) : productForm.imageUrl.split('?')[0];
                       if (base && e.target.src !== base) {

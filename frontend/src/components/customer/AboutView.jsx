@@ -10,7 +10,7 @@ export default function AboutView({ onExploreCatalog }) {
         <h1 className="about-title">The Art of Timeless Elegance</h1>
         <p className="about-subtitle">
           Founded on the principles of immaculate craftsmanship and contemporary luxury, 
-          LAURITE Haute Couture defines the intersection of tradition and modern elegance.
+          LAURITE Style defines the intersection of tradition and modern elegance.
         </p>
       </section>
 
@@ -45,7 +45,7 @@ export default function AboutView({ onExploreCatalog }) {
           <div className="value-card">
             <div className="value-icon"><IconBag /></div>
             <h3>Curated Collections</h3>
-            <p>Every product is hand-selected and quality tested by our haute couture fashion experts.</p>
+            <p>Every product is hand-selected and quality tested by our style fashion experts.</p>
           </div>
           <div className="value-card">
             <div className="value-icon"><IconRefresh /></div>
@@ -62,7 +62,7 @@ export default function AboutView({ onExploreCatalog }) {
 
       {/* CTA Section */}
       <div className="about-cta-card">
-        <h2>Experience LAURITE Haute Couture</h2>
+        <h2>Experience LAURITE Style</h2>
         <p>Explore our latest seasonal collections and elevate your everyday lifestyle.</p>
         <button type="button" className="btn-primary btn-gold" onClick={onExploreCatalog} style={{ width: 'auto', padding: '0.85rem 2.2rem', marginTop: '1rem' }}>
           EXPLORE CATALOG →

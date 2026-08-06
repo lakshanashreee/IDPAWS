@@ -39,7 +39,7 @@ export default function HeroSection({ onShopNow }) {
         <div className="home-hero-image-box">
           <img
             src="/landing_bg.jpg"
-            alt="LAURITE Haute Couture - Timeless Elegance"
+            alt="LAURITE Style - Timeless Elegance"
             className="home-hero-img"
           />
         </div>

@@ -45,7 +45,7 @@ export default function ContactView() {
               <div className="info-icon">📍</div>
               <div>
                 <strong>Boutique Flagship</strong>
-                <p>LAURITE Haute Couture Flagship Store, Luxury Avenue, Singapore 018956</p>
+                <p>LAURITE Style Flagship Store, Luxury Avenue, Singapore 018956</p>
               </div>
             </div>
 

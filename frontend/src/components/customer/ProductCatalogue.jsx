@@ -79,7 +79,7 @@ export default function ProductCatalogue({
                         <img 
                           src={cat.imageUrl} 
                           alt={cat.name} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                           className="product-image" 
                         />
                       ) : (

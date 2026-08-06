@@ -158,7 +158,7 @@ export default function AdminCategories({
                 </div>
               ) : (
                 <div style={{ position: 'relative', display: 'inline-block', width: 'fit-content' }}>
-                  <img src={formData.imageUrl} alt="Category Preview" style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(212,197,185,0.4)' }} />
+                  <img src={formData.imageUrl} alt="Category Preview" style={{ width: '200px', height: '200px', objectFit: 'contain', borderRadius: '12px', border: '1px solid rgba(212,197,185,0.4)' }} />
                   <button 
                     type="button" 
                     onClick={() => setFormData({...formData, imageUrl: ''})} 
@@ -191,7 +191,7 @@ export default function AdminCategories({
             <div key={cat.categoryId} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(212,197,185,0.4)', display: 'flex', flexDirection: 'column' }}>
               <div style={{ height: '150px', background: '#faf8f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {cat.imageUrl ? (
-                  <img src={cat.imageUrl} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={cat.imageUrl} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No Image</span>
                 )}

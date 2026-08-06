@@ -56,7 +56,7 @@ export default function CustomerHeader({
           <div className="brand-logo-center">
             <span className="brand-initial-l">L</span>AURITE
           </div>
-          <span className="brand-tag-sub">HAUTE COUTURE</span>
+          <span className="brand-tag-sub">STYLE</span>
         </div>
         
         {/* Right Column: Static My Orders, Bag & Sign Out */}

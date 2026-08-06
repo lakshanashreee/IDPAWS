@@ -213,6 +213,11 @@ function App() {
     if (!product) return product;
     let description = product.description || '';
     let imageUrl = product.imageUrl || product.image || '';
+    let categoryName = product.category || 'General';
+
+    if (typeof categoryName === 'object' && categoryName !== null) {
+      categoryName = categoryName.name || 'General';
+    }
 
     if (!imageUrl && description.includes('|||')) {
       const parts = description.split('|||');
@@ -222,6 +227,7 @@ function App() {
 
     return {
       ...product,
+      category: categoryName,
       description,
       imageUrl
     };
@@ -858,7 +864,7 @@ function App() {
               <div className="brand-logo-center" style={{ marginBottom: '0.2rem' }}>
                 <span className="brand-initial-l">L</span>AURITE
               </div>
-              <span className="brand-tag-sub" style={{ display: 'block', marginBottom: '1.75rem' }}>HAUTE COUTURE</span>
+              <span className="brand-tag-sub" style={{ display: 'block', marginBottom: '1.75rem' }}>STYLE</span>
 
               {view === 'login' && (
                 <LoginView

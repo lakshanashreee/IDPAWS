@@ -21,7 +21,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
           <div className="landing-brand-logo">
             <span className="brand-gold-l">L</span>AURITE
           </div>
-          <div className="landing-brand-sub">HAUTE COUTURE</div>
+          <div className="landing-brand-sub">STYLE</div>
         </div>
 
         <div className="landing-nav-right">
@@ -63,7 +63,7 @@ export default function LandingPage({ onShopNow, userSession, handleLogout, acti
         <div className="landing-hero-image-wrapper">
           <img
             src="/landing_bg.jpg"
-            alt="LAURITE Haute Couture - Timeless Elegance"
+            alt="LAURITE Style - Timeless Elegance"
             className="landing-hero-img"
           />
           <div className="landing-img-overlay"></div>
