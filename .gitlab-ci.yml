@@ -90,7 +90,7 @@ sonarqube_analysis:
   stage: sonarqube
   script:
     - echo "Running SonarQube static code analysis..."
-    - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.organization=${SONAR_ORG} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
+    - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "-Dsonar.projectKey=$env:SONAR_PROJECT_KEY" "-Dsonar.organization=$env:SONAR_ORG" "-Dsonar.host.url=$env:SONAR_HOST_URL" "-Dsonar.token=$env:SONAR_TOKEN"
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
@@ -100,23 +100,21 @@ sonarqube_analysis:
 # -----------------------------------------------------------------------------
 snyk_analysis:
   stage: snyk
-  image: maven:3.9.6-eclipse-temurin-21
   script:
     - |
-      if [ -z "$SNYK_TOKEN" ]; then
-        echo "SNYK_TOKEN is not set or empty. Please add a valid token to your GitLab CI/CD Variables. Skipping Snyk scan..."
+      if ([string]::IsNullOrEmpty($env:SNYK_TOKEN)) {
+        Write-Host "SNYK_TOKEN is not set or empty. Skipping Snyk scan..."
         exit 0
-      fi
-    - echo "Downloading Snyk CLI..."
-    - curl -Lo /usr/local/bin/snyk "https://static.snyk.io/cli/latest/snyk-linux"
-    - chmod +x /usr/local/bin/snyk
-    - echo "Authenticating with Snyk..."
-    - snyk config set api="${SNYK_TOKEN}"
-    - echo "Running Snyk Open Source Scan..."
-    - snyk test --all-projects --severity-threshold=high --report || true
-    - snyk monitor --all-projects
-    - echo "Running Snyk IaC Scan on Terraform..."
-    - snyk iac test terraform/ --severity-threshold=high --report || true
+      }
+    - Write-Host "Downloading Snyk CLI for Windows..."
+    - Invoke-WebRequest -Uri "https://static.snyk.io/cli/latest/snyk-win.exe" -OutFile "snyk.exe"
+    - Write-Host "Authenticating with Snyk..."
+    - .\snyk.exe config set api="$env:SNYK_TOKEN"
+    - Write-Host "Running Snyk Open Source Scan..."
+    - .\snyk.exe test --all-projects --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk test found issues" }
+    - .\snyk.exe monitor --all-projects
+    - Write-Host "Running Snyk IaC Scan on Terraform..."
+    - .\snyk.exe iac test terraform/ --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk IaC test found issues" }
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
@@ -126,28 +124,26 @@ snyk_analysis:
 # -----------------------------------------------------------------------------
 terraform_validate:
   stage: terraform_validate
-  image:
-    name: hashicorp/terraform:1.10
-    entrypoint: [""]
   script:
     - cd terraform
-    - mkdir -p $TF_PLUGIN_CACHE_DIR
-    - terraform init -backend=false
-    - terraform validate
+    - mkdir -p $env:TF_PLUGIN_CACHE_DIR -ErrorAction SilentlyContinue
+    - Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"
+    - Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force
+    - .\terraform.exe init -backend=false
+    - .\terraform.exe validate
 
 # -----------------------------------------------------------------------------
 # Stage 6: Terraform Plan
 # -----------------------------------------------------------------------------
 terraform_plan:
   stage: terraform_plan
-  image:
-    name: hashicorp/terraform:1.10
-    entrypoint: [""]
   script:
     - cd terraform
-    - mkdir -p $TF_PLUGIN_CACHE_DIR
-    - terraform init -backend=false
-    - terraform plan -parallelism=30
+    - mkdir -p $env:TF_PLUGIN_CACHE_DIR -ErrorAction SilentlyContinue
+    - Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"
+    - Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force
+    - .\terraform.exe init -backend=false
+    - .\terraform.exe plan -parallelism=30
   artifacts:
     name: terraform-plan
     paths:
