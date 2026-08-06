@@ -9,11 +9,14 @@ D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\exception\Pro
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\handler\ProductHandler.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\model\Category.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\model\Product.java
+D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\model\WishlistItem.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\repository\CategoryRepository.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\repository\ProductRepository.java
+D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\repository\WishlistRepository.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\service\CategoryService.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\service\ProductService.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\service\S3ImageService.java
+D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\service\WishlistService.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\util\IdGenerator.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\util\JsonUtil.java
 D:\AWS PROJECT\product-service\src\main\java\com\ecommerce\product\util\ResponseUtil.java

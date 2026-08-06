@@ -1,7 +1,6 @@
 package com.ecommerce.product.service;
 
 import com.ecommerce.product.dto.ProductResponse;
-import com.ecommerce.product.model.Product;
 import com.ecommerce.product.model.WishlistItem;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.repository.WishlistRepository;
@@ -40,21 +39,7 @@ public class WishlistService {
         return items.stream()
                 .map(item -> productRepository.getProductById(item.getProductId()))
                 .filter(Objects::nonNull)
-                .map(this::mapToResponse)
+                .map(ProductResponse::fromProduct)
                 .collect(Collectors.toList());
-    }
-
-    private ProductResponse mapToResponse(Product product) {
-        return new ProductResponse(
-                product.getProductId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getCategory(),
-                product.getImageUrl(),
-                product.getStockQuantity(),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
-        );
     }
 }
