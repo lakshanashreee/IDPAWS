@@ -20,6 +20,10 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
   createInventory,
   getInventory,
   reduceStock,
@@ -53,6 +57,7 @@ import CheckoutView from './components/customer/CheckoutView';
 import AdminHeader from './components/admin/AdminHeader';
 import AdminProducts from './components/admin/AdminProducts';
 import AdminInventory from './components/admin/AdminInventory';
+import AdminCategories from './components/admin/AdminCategories';
 import AdminCustomers from './components/admin/AdminCustomers';
 import AdminAnalytics from './components/admin/AdminAnalytics';
 
@@ -84,7 +89,7 @@ function App() {
   // STOREFRONT STATES
   // ----------------------------------------------------
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(['ALL']);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -117,7 +122,7 @@ function App() {
   // ----------------------------------------------------
   // ADMIN HUB STATES
   // ----------------------------------------------------
-  const [adminTab, setAdminTab] = useState('products'); // 'products' | 'inventory' | 'customers' | 'analytics'
+  const [adminTab, setAdminTab] = useState('products'); // 'products' | 'inventory' | 'categories' | 'customers' | 'analytics'
   const [adminInventory, setAdminInventory] = useState([]);
   const [adminOrders, setAdminOrders] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null); // String (userId)
@@ -231,17 +236,22 @@ function App() {
       const productList = Array.isArray(data) ? data : (data?.products || []);
       const parsedList = productList.map(parseProduct);
       setProducts(parsedList);
-
-      setCategories(prev => {
-        const uniqueCats = ['ALL', ...new Set(parsedList.map(p => (p.category || 'General').toUpperCase()))];
-        return Array.from(new Set([...prev, ...uniqueCats]));
-      });
     } catch (err) {
       handleApiError(err, fetchProducts);
     } finally {
       setStorefrontLoading(false);
     }
   }, [handleApiError, parseProduct]);
+
+  // Fetch Categories Handler
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await getCategories();
+      setCategories(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  }, []);
 
   // Fetch Cart Handler
   const fetchCart = useCallback(async () => {
@@ -319,10 +329,11 @@ function App() {
   useEffect(() => {
     if (view === 'admin_hub' && userSession) {
       fetchProducts();
+      fetchCategories();
       fetchAdminInventory();
       fetchAdminOrders();
     }
-  }, [view, userSession, adminTab, fetchProducts, fetchAdminInventory, fetchAdminOrders]);
+  }, [view, userSession, adminTab, fetchProducts, fetchCategories, fetchAdminInventory, fetchAdminOrders]);
 
   // Admin handlers
   const handleProductFormSubmit = async (e) => {
@@ -442,12 +453,13 @@ function App() {
     if (view === 'customer_hub' && userSession) {
       fetchAdminInventory();
       fetchProducts();
+      fetchCategories();
       fetchCart();
       if (activeTab === 'orders') {
         fetchOrders();
       }
     }
-  }, [view, userSession, activeTab, fetchProducts, fetchCart, fetchOrders, fetchAdminInventory]);
+  }, [view, userSession, activeTab, fetchProducts, fetchCategories, fetchCart, fetchOrders, fetchAdminInventory]);
 
   // Auth Submit Handlers
   const handleSignUpSubmit = async (e) => {
@@ -825,6 +837,17 @@ function App() {
                   adminOrders={adminOrders}
                   adminInventory={adminInventory}
                   products={products}
+                />
+              )}
+
+              {adminTab === 'categories' && (
+                <AdminCategories
+                  categories={categories}
+                  fetchCategories={fetchCategories}
+                  createCategory={createCategory}
+                  updateCategory={updateCategory}
+                  deleteCategory={deleteCategory}
+                  getUploadUrl={getImageUploadUrl}
                 />
               )}
             </div>

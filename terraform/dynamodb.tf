@@ -115,3 +115,21 @@ resource "aws_dynamodb_table" "payment_table" {
     }
   )
 }
+
+resource "aws_dynamodb_table" "category_table" {
+  name         = "L_CategoryTable"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "categoryId"
+
+  attribute {
+    name = "categoryId"
+    type = "S"
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      ApplicationService = "ProductService"
+    }
+  )
+}

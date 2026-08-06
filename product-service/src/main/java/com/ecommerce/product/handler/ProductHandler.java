@@ -11,6 +11,8 @@ import com.ecommerce.common.security.ForbiddenException;
 import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.exception.ProductNotFoundException;
+import com.ecommerce.product.model.Category;
+import com.ecommerce.product.service.CategoryService;
 import com.ecommerce.product.service.ProductService;
 import com.ecommerce.product.service.S3ImageService;
 import com.ecommerce.product.util.JsonUtil;
@@ -41,18 +43,22 @@ import java.util.regex.Pattern;
 public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
     private final ProductService productService;
+    private final CategoryService categoryService;
 
     private static final Pattern PRODUCT_ID_PATH = Pattern.compile("^/products/([^/]+)$");
+    private static final Pattern CATEGORY_ID_PATH = Pattern.compile("^/products/categories/([^/]+)$");
     private static final Pattern CATEGORY_PATH   = Pattern.compile("^/products/category/([^/]+)$");
     /** Exact match – must be checked before PRODUCT_ID_PATH to avoid false captures. */
     private static final String UPLOAD_URL_PATH  = "/products/upload-url";
 
     public ProductHandler() {
         this.productService = new ProductService();
+        this.categoryService = new CategoryService();
     }
 
-    public ProductHandler(ProductService productService) {
+    public ProductHandler(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
     @Override
@@ -116,6 +122,40 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
                 AuthorizationUtil.requireAdminOrCustomer(request);
                 List<ProductResponse> products = productService.getAllProducts();
                 return ResponseUtil.ok("Products fetched successfully", products);
+            }
+
+            // POST /products/categories
+            if (path.equals("/products/categories") && "POST".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdmin(request);
+                Category catRequest = JsonUtil.fromJson(request.getBody(), Category.class);
+                Category created = categoryService.createCategory(catRequest);
+                return ResponseUtil.created("Category created successfully", created);
+            }
+
+            // GET /products/categories
+            if (path.equals("/products/categories") && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdminOrCustomer(request);
+                List<Category> categories = categoryService.getAllCategories();
+                return ResponseUtil.ok("Categories fetched successfully", categories);
+            }
+
+            // PUT /products/categories/{categoryId}, DELETE /products/categories/{categoryId}
+            Matcher categoryIdMatcher = CATEGORY_ID_PATH.matcher(path);
+            if (categoryIdMatcher.matches()) {
+                String categoryId = resolvePathParam(pathParameters, "categoryId", categoryIdMatcher.group(1));
+                
+                if ("PUT".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
+                    Category catRequest = JsonUtil.fromJson(request.getBody(), Category.class);
+                    Category updated = categoryService.updateCategory(categoryId, catRequest);
+                    return ResponseUtil.ok("Category updated successfully", updated);
+                }
+
+                if ("DELETE".equalsIgnoreCase(httpMethod)) {
+                    AuthorizationUtil.requireAdmin(request);
+                    categoryService.deleteCategory(categoryId);
+                    return ResponseUtil.ok("Category deleted successfully", null);
+                }
             }
 
             // GET /products/{productId}, PUT /products/{productId}, DELETE /products/{productId}

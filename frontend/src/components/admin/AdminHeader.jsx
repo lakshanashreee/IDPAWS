@@ -53,6 +53,13 @@ export default function AdminHeader({
           </button>
           <button 
             type="button" 
+            className={`category-pill-btn ${adminTab === 'categories' ? 'active' : ''}`}
+            onClick={() => { setAdminTab('categories'); setSelectedCustomer(null); }}
+          >
+            Categories
+          </button>
+          <button 
+            type="button" 
             className={`category-pill-btn ${adminTab === 'customers' ? 'active' : ''}`}
             onClick={() => { setAdminTab('customers'); }}
           >

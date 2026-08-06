@@ -176,6 +176,31 @@ export async function deleteProduct(productId) {
   });
 }
 
+// Admin Category CRUD APIs
+export async function getCategories() {
+  return request('/products/categories', { method: 'GET', suppressLogout: true });
+}
+
+export async function createCategory(categoryData) {
+  return request('/products/categories', {
+    method: 'POST',
+    body: JSON.stringify(categoryData)
+  });
+}
+
+export async function updateCategory(categoryId, categoryData) {
+  return request(`/products/categories/${categoryId}`, {
+    method: 'PUT',
+    body: JSON.stringify(categoryData)
+  });
+}
+
+export async function deleteCategory(categoryId) {
+  return request(`/products/categories/${categoryId}`, {
+    method: 'DELETE'
+  });
+}
+
 /**
  * Step 1 of the S3 image upload flow.
  * Returns { uploadUrl, imageUrl } where:
