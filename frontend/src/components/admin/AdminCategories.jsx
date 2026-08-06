@@ -73,30 +73,113 @@ export default function AdminCategories({
       {(isCreating || editingCategory) && (
         <div style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(212,197,185,0.4)', marginBottom: '2rem' }}>
           <h3 style={{ marginTop: 0, color: 'var(--accent-gold)' }}>{isCreating ? 'Create Category' : 'Edit Category'}</h3>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label>Category Name</label>
-              <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="e.g. ELECTRONICS" />
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.95rem' }}>Category Name</label>
+              <input 
+                type="text" 
+                value={formData.name} 
+                onChange={e => setFormData({...formData, name: e.target.value})} 
+                required 
+                placeholder="e.g. ELECTRONICS" 
+                style={{ padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(212,197,185,0.6)', background: '#fff', fontSize: '1rem', width: '100%', boxSizing: 'border-box' }}
+              />
             </div>
-            <div>
-              <label>Description</label>
-              <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Category description..." style={{ minHeight: '80px' }} />
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.95rem' }}>Description</label>
+              <textarea 
+                value={formData.description} 
+                onChange={e => setFormData({...formData, description: e.target.value})} 
+                placeholder="Category description..." 
+                style={{ minHeight: '100px', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(212,197,185,0.6)', background: '#fff', fontSize: '1rem', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
+              />
             </div>
             
-            <div className="image-upload-area">
-              <label>Category Image URL</label>
-              <input type="text" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" style={{ marginBottom: '1rem' }} />
-              {formData.imageUrl && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                  <img src={formData.imageUrl} alt="Category Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
-                  <button type="button" onClick={() => setFormData({...formData, imageUrl: ''})} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}>Remove Image</button>
+            <div className="image-upload-area" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.95rem' }}>Category Image</label>
+              
+              {!formData.imageUrl ? (
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => setFormData({...formData, imageUrl: e.target.result});
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const items = e.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                      if (items[i].type.indexOf('image') !== -1) {
+                        const file = items[i].getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = (e) => setFormData({...formData, imageUrl: e.target.result});
+                        reader.readAsDataURL(file);
+                        break;
+                      }
+                    }
+                  }}
+                  onClick={() => document.getElementById('cat-image-upload').click()}
+                  style={{ 
+                    border: '2px dashed rgba(212,197,185,0.8)', 
+                    borderRadius: '12px', 
+                    padding: '3rem 1rem', 
+                    textAlign: 'center', 
+                    cursor: 'pointer',
+                    background: 'rgba(250,248,245,0.5)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(212,197,185,0.1)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(250,248,245,0.5)'}
+                >
+                  <input 
+                    id="cat-image-upload"
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => setFormData({...formData, imageUrl: e.target.result});
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                  <div style={{ color: 'var(--accent-gold)', marginBottom: '0.5rem' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  </div>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#1c1917' }}>Click to upload, drag and drop, or paste an image</p>
+                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Supports JPG, PNG, WEBP, GIF</p>
+                </div>
+              ) : (
+                <div style={{ position: 'relative', display: 'inline-block', width: 'fit-content' }}>
+                  <img src={formData.imageUrl} alt="Category Preview" style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(212,197,185,0.4)' }} />
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData({...formData, imageUrl: ''})} 
+                    style={{ 
+                      position: 'absolute', top: '-10px', right: '-10px', 
+                      background: '#fff', border: '1px solid #ef4444', color: '#ef4444', 
+                      width: '30px', height: '30px', borderRadius: '50%', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' 
+                    }}
+                    title="Remove Image"
+                  >
+                    ×
+                  </button>
                 </div>
               )}
             </div>
             
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="btn-primary" style={{ flex: 1, padding: '0.8rem' }}>Save Category</button>
-              <button type="button" onClick={resetForm} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--text-muted)', color: 'var(--text-muted)', borderRadius: '12px', cursor: 'pointer' }}>Cancel</button>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <button type="submit" className="btn-primary" style={{ flex: 1, padding: '0.8rem 1.5rem', fontWeight: 600 }}>Save Category</button>
+              <button type="button" onClick={resetForm} style={{ flex: 1, padding: '0.8rem 1.5rem', background: '#fff', border: '1px solid rgba(212,197,185,0.8)', color: '#444', borderRadius: '12px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
             </div>
           </form>
         </div>
