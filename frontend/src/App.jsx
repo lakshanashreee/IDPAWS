@@ -29,7 +29,10 @@ import {
   reduceStock,
   addStock,
   createPayment,
-  getImageUploadUrl
+  getImageUploadUrl,
+  getWishlist,
+  addToWishlist,
+  removeFromWishlist
 } from './utils/api';
 
 // Common Components
@@ -52,6 +55,7 @@ import ContactView from './components/customer/ContactView';
 import CustomerOrders from './components/customer/CustomerOrders';
 import ShoppingBagDrawer from './components/customer/ShoppingBagDrawer';
 import CheckoutView from './components/customer/CheckoutView';
+import WishlistView from './components/customer/WishlistView';
 
 // Admin Components
 import AdminHeader from './components/admin/AdminHeader';
@@ -95,6 +99,7 @@ function App() {
   
   const [cartData, setCartData] = useState({ items: [] });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
   // API Error Tracking
   const [storefrontError, setStorefrontError] = useState('');
@@ -272,6 +277,44 @@ function App() {
       setCartLoading(false);
     }
   }, [userSession, handleApiError]);
+
+  // Fetch Wishlist Handler
+  const fetchWishlist = useCallback(async () => {
+    if (!userSession) return;
+    try {
+      const data = await getWishlist(userSession.payload.sub);
+      setWishlistItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch wishlist:', err);
+    }
+  }, [userSession]);
+
+  // Toggle Wishlist Handler
+  const toggleWishlist = async (product) => {
+    if (!userSession) return;
+    const isWished = wishlistItems.some(item => item.productId === product.productId);
+    
+    // Optimistic UI update
+    if (isWished) {
+      setWishlistItems(prev => prev.filter(item => item.productId !== product.productId));
+      try {
+        await removeFromWishlist(userSession.payload.sub, product.productId);
+      } catch (err) {
+        // Revert on failure
+        setWishlistItems(prev => [...prev, product]);
+        handleApiError(err);
+      }
+    } else {
+      setWishlistItems(prev => [...prev, product]);
+      try {
+        await addToWishlist(userSession.payload.sub, product.productId);
+      } catch (err) {
+        // Revert on failure
+        setWishlistItems(prev => prev.filter(item => item.productId !== product.productId));
+        handleApiError(err);
+      }
+    }
+  };
 
   // Fetch Customer Orders Handler
   const fetchOrders = useCallback(async () => {
@@ -461,11 +504,12 @@ function App() {
       fetchProducts();
       fetchCategories();
       fetchCart();
+      fetchWishlist();
       if (activeTab === 'orders') {
         fetchOrders();
       }
     }
-  }, [view, userSession, activeTab, fetchProducts, fetchCategories, fetchCart, fetchOrders, fetchAdminInventory]);
+  }, [view, userSession, activeTab, fetchProducts, fetchCategories, fetchCart, fetchWishlist, fetchOrders, fetchAdminInventory]);
 
   // Auth Submit Handlers
   const handleSignUpSubmit = async (e) => {
@@ -751,6 +795,8 @@ function App() {
                 handleAddToCart={handleAddToCart}
                 cartLoading={cartLoading}
                 fetchProducts={fetchProducts}
+                wishlistItems={wishlistItems}
+                toggleWishlist={toggleWishlist}
               />
             )}
 
@@ -775,6 +821,18 @@ function App() {
                 fetchOrders={fetchOrders}
                 setActiveTab={setActiveTab}
                 setSelectedOrderForInvoice={setSelectedOrderForInvoice}
+              />
+            )}
+
+            {activeTab === 'wishlist' && (
+              <WishlistView
+                wishlistItems={wishlistItems}
+                adminInventory={adminInventory}
+                cartData={cartData}
+                handleAddToCart={handleAddToCart}
+                cartLoading={cartLoading}
+                toggleWishlist={toggleWishlist}
+                setActiveTab={setActiveTab}
               />
             )}
           </>

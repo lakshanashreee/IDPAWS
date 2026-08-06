@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconUser, IconOrders, IconBag } from '../common/Icons';
+import { IconUser, IconOrders, IconBag, IconHeart } from '../common/Icons';
 
 export default function CustomerHeader({
   userSession,
@@ -61,6 +61,15 @@ export default function CustomerHeader({
         
         {/* Right Column: Static My Orders, Bag & Sign Out */}
         <div className="header-right">
+          <button 
+            type="button" 
+            className={`category-pill-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
+            onClick={() => setActiveTab('wishlist')}
+            style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem' }}
+          >
+            <IconHeart /> Wishlist
+          </button>
+
           <button 
             type="button" 
             className={`category-pill-btn ${activeTab === 'orders' ? 'active' : ''}`}

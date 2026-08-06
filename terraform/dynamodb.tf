@@ -133,3 +133,27 @@ resource "aws_dynamodb_table" "category_table" {
     }
   )
 }
+
+resource "aws_dynamodb_table" "wishlist_table" {
+  name         = "L_WishlistTable"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "userId"
+  range_key    = "productId"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  attribute {
+    name = "productId"
+    type = "S"
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      ApplicationService = "ProductService"
+    }
+  )
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconBag, IconSearch } from '../common/Icons';
+import { IconBag, IconSearch, IconHeart, IconHeartFilled } from '../common/Icons';
 
 export default function ProductCatalogue({
   products = [],
@@ -15,7 +15,9 @@ export default function ProductCatalogue({
   adminInventory = [],
   cartData,
   handleAddToCart,
-  cartLoading
+  cartLoading,
+  wishlistItems = [],
+  toggleWishlist
 }) {
   const displayProducts = filteredProducts !== undefined ? filteredProducts : products;
 
@@ -112,7 +114,19 @@ export default function ProductCatalogue({
 
                     return (
                       <div key={product.productId} className="product-card">
-                        <div className="product-image-container">
+                        <div className="product-image-container" style={{ position: 'relative' }}>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); toggleWishlist && toggleWishlist(product); }}
+                            style={{
+                              position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                              background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%',
+                              width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                            }}
+                          >
+                            {wishlistItems.some(item => item.productId === product.productId) ? <IconHeartFilled /> : <IconHeart />}
+                          </button>
                           {product.imageUrl ? (
                             <img src={product.imageUrl} alt={product.name} className="product-image" loading="lazy" />
                           ) : (

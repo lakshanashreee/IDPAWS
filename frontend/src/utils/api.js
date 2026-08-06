@@ -94,6 +94,19 @@ export async function getProducts() {
   return request('/products', { method: 'GET', suppressLogout: true });
 }
 
+// Wishlist API
+export async function getWishlist(userId) {
+  return request(`/products/wishlist/${userId}`, { method: 'GET' });
+}
+
+export async function addToWishlist(userId, productId) {
+  return request(`/products/wishlist/${userId}/${productId}`, { method: 'POST' });
+}
+
+export async function removeFromWishlist(userId, productId) {
+  return request(`/products/wishlist/${userId}/${productId}`, { method: 'DELETE' });
+}
+
 // ----------------------------------------------------
 // CART SERVICE
 // ----------------------------------------------------

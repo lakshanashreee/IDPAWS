@@ -15,6 +15,7 @@ import com.ecommerce.product.model.Category;
 import com.ecommerce.product.service.CategoryService;
 import com.ecommerce.product.service.ProductService;
 import com.ecommerce.product.service.S3ImageService;
+import com.ecommerce.product.service.WishlistService;
 import com.ecommerce.product.util.JsonUtil;
 import com.ecommerce.product.util.ResponseUtil;
 
@@ -44,21 +45,26 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final WishlistService wishlistService;
 
     private static final Pattern PRODUCT_ID_PATH = Pattern.compile("^/products/([^/]+)$");
     private static final Pattern CATEGORY_ID_PATH = Pattern.compile("^/products/categories/([^/]+)$");
     private static final Pattern CATEGORY_PATH   = Pattern.compile("^/products/category/([^/]+)$");
+    private static final Pattern WISHLIST_PATH = Pattern.compile("^/products/wishlist/([^/]+)$");
+    private static final Pattern WISHLIST_ITEM_PATH = Pattern.compile("^/products/wishlist/([^/]+)/([^/]+)$");
     /** Exact match – must be checked before PRODUCT_ID_PATH to avoid false captures. */
     private static final String UPLOAD_URL_PATH  = "/products/upload-url";
 
     public ProductHandler() {
         this.productService = new ProductService();
         this.categoryService = new CategoryService();
+        this.wishlistService = new WishlistService();
     }
 
-    public ProductHandler(ProductService productService, CategoryService categoryService) {
+    public ProductHandler(ProductService productService, CategoryService categoryService, WishlistService wishlistService) {
         this.productService = productService;
         this.categoryService = categoryService;
+        this.wishlistService = wishlistService;
     }
 
     @Override
@@ -155,6 +161,33 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
                     AuthorizationUtil.requireAdmin(request);
                     categoryService.deleteCategory(categoryId);
                     return ResponseUtil.ok("Category deleted successfully", null);
+                }
+            }
+
+            // GET /products/wishlist/{userId}
+            Matcher wishlistMatcher = WISHLIST_PATH.matcher(path);
+            if (wishlistMatcher.matches() && "GET".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.requireAdminOrCustomer(request);
+                String userId = resolvePathParam(pathParameters, "userId", wishlistMatcher.group(1));
+                List<ProductResponse> wishlist = wishlistService.getWishlistForUser(userId);
+                return ResponseUtil.ok("Wishlist fetched successfully", wishlist);
+            }
+
+            // POST, DELETE /products/wishlist/{userId}/{productId}
+            Matcher wishlistItemMatcher = WISHLIST_ITEM_PATH.matcher(path);
+            if (wishlistItemMatcher.matches()) {
+                AuthorizationUtil.requireAdminOrCustomer(request);
+                String userId = resolvePathParam(pathParameters, "userId", wishlistItemMatcher.group(1));
+                String productId = resolvePathParam(pathParameters, "productId", wishlistItemMatcher.group(2));
+                
+                if ("POST".equalsIgnoreCase(httpMethod)) {
+                    wishlistService.addProductToWishlist(userId, productId);
+                    return ResponseUtil.created("Added to wishlist", null);
+                }
+                
+                if ("DELETE".equalsIgnoreCase(httpMethod)) {
+                    wishlistService.removeProductFromWishlist(userId, productId);
+                    return ResponseUtil.ok("Removed from wishlist", null);
                 }
             }
 
