@@ -12,14 +12,11 @@ export default function AdminCategories({
   const [editingCategory, setEditingCategory] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', imageUrl: '' });
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadError, setUploadError] = useState('');
 
   const resetForm = () => {
     setEditingCategory(null);
     setIsCreating(false);
     setFormData({ name: '', description: '', imageUrl: '' });
-    setUploadError('');
   };
 
   const startCreate = () => {
@@ -33,43 +30,7 @@ export default function AdminCategories({
     setFormData({ name: cat.name, description: cat.description || '', imageUrl: cat.imageUrl || '' });
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please select a valid image file');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image must be under 5MB');
-      return;
-    }
-
-    setUploadingImage(true);
-    setUploadError('');
-
-    try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filename = `category-${Date.now()}.${ext}`;
-      const { uploadUrl, imageUrl } = await getUploadUrl(filename, file.type);
-      
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file
-      });
-      
-      if (!uploadRes.ok) throw new Error('Failed to upload image to S3');
-      
-      setFormData(prev => ({ ...prev, imageUrl }));
-    } catch (err) {
-      setUploadError(err.message);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,17 +84,12 @@ export default function AdminCategories({
             </div>
             
             <div className="image-upload-area">
-              <label>Category Image</label>
-              {formData.imageUrl ? (
+              <label>Category Image URL</label>
+              <input type="text" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.jpg" style={{ marginBottom: '1rem' }} />
+              {formData.imageUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                  <img src={formData.imageUrl} alt="Category" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
+                  <img src={formData.imageUrl} alt="Category Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
                   <button type="button" onClick={() => setFormData({...formData, imageUrl: ''})} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}>Remove Image</button>
-                </div>
-              ) : (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <input type="file" accept="image/jpeg, image/png, image/webp" onChange={handleImageUpload} disabled={uploadingImage} />
-                  {uploadingImage && <span style={{ marginLeft: '1rem', color: 'var(--accent-gold)', fontSize: '0.85rem' }}>Uploading...</span>}
-                  {uploadError && <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>{uploadError}</p>}
                 </div>
               )}
             </div>

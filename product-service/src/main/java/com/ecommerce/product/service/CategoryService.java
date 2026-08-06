@@ -1,11 +1,15 @@
 package com.ecommerce.product.service;
 
 import com.ecommerce.product.model.Category;
+import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.CategoryRepository;
+import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.util.IdGenerator;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -14,16 +18,16 @@ public class CategoryService {
     private static final Logger LOGGER = Logger.getLogger(CategoryService.class.getName());
 
     private final CategoryRepository categoryRepository;
-    private final S3ImageService s3ImageService;
+    private final ProductRepository productRepository;
 
     public CategoryService() {
         this.categoryRepository = new CategoryRepository();
-        this.s3ImageService = new S3ImageService();
+        this.productRepository = new ProductRepository();
     }
 
-    public CategoryService(CategoryRepository categoryRepository, S3ImageService s3ImageService) {
+    public CategoryService(CategoryRepository categoryRepository, ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
-        this.s3ImageService = s3ImageService;
+        this.productRepository = productRepository;
     }
 
     public Category createCategory(Category request) {
@@ -42,21 +46,38 @@ public class CategoryService {
     }
 
     public List<Category> getAllCategories() {
-        return categoryRepository.getAllCategories();
+        // Auto-extract categories from products
+        List<Product> products = productRepository.getAllProducts();
+        Set<String> productCategories = products.stream()
+                .map(Product::getCategory)
+                .filter(c -> c != null && !c.isBlank())
+                .collect(Collectors.toSet());
+        
+        List<Category> existingCategories = categoryRepository.getAllCategories();
+        Set<String> existingCategoryNames = existingCategories.stream()
+                .map(Category::getName)
+                .collect(Collectors.toSet());
+        
+        for (String catName : productCategories) {
+            if (!existingCategoryNames.contains(catName)) {
+                Category newCat = new Category();
+                newCat.setCategoryId(IdGenerator.generateCategoryId());
+                newCat.setName(catName);
+                newCat.setCreatedAt(Instant.now().toString());
+                newCat.setUpdatedAt(Instant.now().toString());
+                categoryRepository.saveCategory(newCat);
+                existingCategories.add(newCat);
+                LOGGER.info("Auto-created missing category: " + catName);
+            }
+        }
+        
+        return existingCategories;
     }
 
     public Category updateCategory(String categoryId, Category request) {
         Category existing = categoryRepository.getCategory(categoryId);
         if (existing == null) {
             throw new IllegalArgumentException("Category not found");
-        }
-
-        if (request.getImageUrl() != null && !request.getImageUrl().equals(existing.getImageUrl()) && existing.getImageUrl() != null) {
-            try {
-                s3ImageService.deleteObject(existing.getImageUrl());
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to delete old category image from S3: {0}", e.getMessage());
-            }
         }
 
         existing.setName(request.getName());
@@ -72,13 +93,6 @@ public class CategoryService {
         Category existing = categoryRepository.getCategory(categoryId);
         if (existing == null) {
             throw new IllegalArgumentException("Category not found");
-        }
-        if (existing.getImageUrl() != null) {
-            try {
-                s3ImageService.deleteObject(existing.getImageUrl());
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to delete category image from S3: {0}", e.getMessage());
-            }
         }
         categoryRepository.deleteCategory(categoryId);
     }
