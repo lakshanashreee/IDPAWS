@@ -1,3 +1,14 @@
+default:
+  tags:
+    - windows
+  image: maven:3.9.6-eclipse-temurin-21
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+      - frontend/node_modules/
+      - .terraform.d/plugin-cache
+
 stages:
   - validate
   - build
@@ -9,15 +20,6 @@ stages:
   - deploy_backend
   - deploy_frontend
   - cloudfront_invalidation
-
-default:
-  image: maven:3.9.6-eclipse-temurin-21
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .m2/repository
-      - frontend/node_modules/
-      - .terraform.d/plugin-cache
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
