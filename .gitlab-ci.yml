@@ -10,16 +10,9 @@ default:
       - .terraform.d/plugin-cache
 
 stages:
-  - validate
-  - build
-  - test
-  - sonarqube
-  - snyk
-  - terraform_validate
-  - terraform_plan
-  - deploy_backend
-  - deploy_frontend
-  - cloudfront_invalidation
+  - build_test
+  - security_iac
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
@@ -27,22 +20,13 @@ variables:
   TF_PLUGIN_CACHE_DIR: "$CI_PROJECT_DIR/.terraform.d/plugin-cache"
 
 # -----------------------------------------------------------------------------
-# Stage 1: Validate
-# -----------------------------------------------------------------------------
-validate:
-  stage: validate
-  script:
-    - echo "Validating Java Maven project configuration..."
-    - mvn -T 1C validate
-
-# -----------------------------------------------------------------------------
-# Stage 2: Build
+# Stage 1: Build & Test (Parallel)
 # -----------------------------------------------------------------------------
 build_backend:
-  stage: build
+  stage: build_test
   script:
-    - echo "Building Java 21 Microservices JARs..."
-    - mvn -T 1C clean package -DskipTests
+    - echo "Building and Testing Java Microservices..."
+    - mvn -T 1C clean package
   artifacts:
     paths:
       - product-service/target/*.jar
@@ -53,12 +37,12 @@ build_backend:
     expire_in: 1 week
 
 build_frontend:
-  stage: build
-  image: node:20-alpine
+  stage: build_test
   script:
-    - echo "Building React + Vite frontend application..."
+    - echo "Building and Testing React Frontend..."
     - cd frontend
     - npm ci --prefer-offline --no-audit
+    - npm test
     - npm run build
   artifacts:
     paths:
@@ -66,28 +50,10 @@ build_frontend:
     expire_in: 1 week
 
 # -----------------------------------------------------------------------------
-# Stage 3: Test
-# -----------------------------------------------------------------------------
-test_backend:
-  stage: test
-  script:
-    - echo "Executing Java unit tests..."
-    - mvn -T 1C test
-
-test_frontend:
-  stage: test
-  image: node:20-alpine
-  script:
-    - echo "Executing React unit tests..."
-    - cd frontend
-    - npm ci --prefer-offline --no-audit
-    - npm test
-
-# -----------------------------------------------------------------------------
-# Stage 4: SonarQube
+# Stage 2: Security & IaC (Parallel)
 # -----------------------------------------------------------------------------
 sonarqube_analysis:
-  stage: sonarqube
+  stage: security_iac
   script:
     - echo "Running SonarQube static code analysis..."
     - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "-Dsonar.projectKey=$env:SONAR_PROJECT_KEY" "-Dsonar.organization=$env:SONAR_ORG" "-Dsonar.host.url=$env:SONAR_HOST_URL" "-Dsonar.token=$env:SONAR_TOKEN"
@@ -95,54 +61,30 @@ sonarqube_analysis:
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
-# -----------------------------------------------------------------------------
-# Stage 4.5: Snyk
-# -----------------------------------------------------------------------------
 snyk_analysis:
-  stage: snyk
+  stage: security_iac
   script:
     - |
       if ([string]::IsNullOrEmpty($env:SNYK_TOKEN)) {
         Write-Host "SNYK_TOKEN is not set or empty. Skipping Snyk scan..."
         exit 0
       }
-    - Write-Host "Downloading Snyk CLI for Windows..."
-    - Invoke-WebRequest -Uri "https://static.snyk.io/cli/latest/snyk-win.exe" -OutFile "snyk.exe"
-    - Write-Host "Authenticating with Snyk..."
+    - if (-not (Test-Path "snyk.exe")) { Write-Host "Downloading Snyk CLI..."; Invoke-WebRequest -Uri "https://static.snyk.io/cli/latest/snyk-win.exe" -OutFile "snyk.exe" }
     - .\snyk.exe config set api="$env:SNYK_TOKEN"
-    - Write-Host "Running Snyk Open Source Scan..."
     - .\snyk.exe test --all-projects --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk test found issues" }
-    - .\snyk.exe monitor --all-projects
-    - Write-Host "Running Snyk IaC Scan on Terraform..."
     - .\snyk.exe iac test terraform/ --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk IaC test found issues" }
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
-# -----------------------------------------------------------------------------
-# Stage 5: Terraform Validate
-# -----------------------------------------------------------------------------
-terraform_validate:
-  stage: terraform_validate
+terraform_plan:
+  stage: security_iac
   script:
     - cd terraform
-    - mkdir -p $env:TF_PLUGIN_CACHE_DIR -ErrorAction SilentlyContinue
-    - Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"
-    - Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force
+    - New-Item -ItemType Directory -Force -Path $env:TF_PLUGIN_CACHE_DIR | Out-Null
+    - if (-not (Test-Path "terraform.exe")) { Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"; Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force }
     - .\terraform.exe init -backend=false
     - .\terraform.exe validate
-
-# -----------------------------------------------------------------------------
-# Stage 6: Terraform Plan
-# -----------------------------------------------------------------------------
-terraform_plan:
-  stage: terraform_plan
-  script:
-    - cd terraform
-    - mkdir -p $env:TF_PLUGIN_CACHE_DIR -ErrorAction SilentlyContinue
-    - Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"
-    - Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force
-    - .\terraform.exe init -backend=false
     - .\terraform.exe plan -parallelism=30
   artifacts:
     name: terraform-plan
@@ -150,50 +92,28 @@ terraform_plan:
       - terraform/
 
 # -----------------------------------------------------------------------------
-# Stage 7: Deploy Backend (Lambda Update)
+# Stage 3: Deploy (Parallel)
 # -----------------------------------------------------------------------------
 deploy_backend:
-  stage: deploy_backend
-  image:
-    name: amazon/aws-cli:latest
-    entrypoint: [""]
+  stage: deploy
   script:
-    - echo "Deploying updated code to existing Lambda functions simultaneously..."
-    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://cart-service/target/cart-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://order-service/target/order-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
-    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar &
-    - wait
+    - echo "Deploying updated code to existing Lambda functions sequentially..."
+    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://cart-service/target/cart-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://order-service/target/order-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
-# -----------------------------------------------------------------------------
-# Stage 8: Deploy Frontend (S3 Upload)
-# -----------------------------------------------------------------------------
 deploy_frontend:
-  stage: deploy_frontend
-  image:
-    name: amazon/aws-cli:latest
-    entrypoint: [""]
+  stage: deploy
   script:
-    - 'echo "Syncing dist/ directory to existing S3 bucket: l-frontend..."'
-    - 'aws s3 sync frontend/dist/ s3://l-frontend/ --delete'
-  rules:
-    - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
-
-# -----------------------------------------------------------------------------
-# Stage 9: CloudFront Invalidation
-# -----------------------------------------------------------------------------
-cloudfront_invalidation:
-  stage: cloudfront_invalidation
-  image:
-    name: amazon/aws-cli:latest
-    entrypoint: [""]
-  script:
-    - 'echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."'
-    - 'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"'
+    - echo "Syncing dist/ directory to existing S3 bucket: l-frontend..."
+    - aws s3 sync frontend/dist/ s3://l-frontend/ --delete
+    - echo "Invalidating CloudFront cache for distribution ${CLOUDFRONT_DISTRIBUTION_ID}..."
+    - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
