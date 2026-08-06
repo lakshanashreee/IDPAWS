@@ -2,12 +2,6 @@ default:
   tags:
     - windows
   image: maven:3.9.6-eclipse-temurin-21
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .m2/repository
-      - frontend/node_modules/
-      - .terraform.d/plugin-cache
 
 stages:
   - build_test
@@ -24,6 +18,10 @@ variables:
 # -----------------------------------------------------------------------------
 build_backend:
   stage: build_test
+  cache:
+    key: "backend-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
   script:
     - echo "Building and Testing Java Microservices..."
     - mvn -T 1C clean package
@@ -38,6 +36,10 @@ build_backend:
 
 build_frontend:
   stage: build_test
+  cache:
+    key: "frontend-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/node_modules/
   script:
     - echo "Building and Testing React Frontend..."
     - cd frontend
@@ -54,6 +56,11 @@ build_frontend:
 # -----------------------------------------------------------------------------
 sonarqube_analysis:
   stage: security_iac
+  cache:
+    key: "backend-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
   script:
     - echo "Running SonarQube static code analysis..."
     - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "-Dsonar.projectKey=$env:SONAR_PROJECT_KEY" "-Dsonar.organization=$env:SONAR_ORG" "-Dsonar.host.url=$env:SONAR_HOST_URL" "-Dsonar.token=$env:SONAR_TOKEN"
@@ -63,6 +70,15 @@ sonarqube_analysis:
 
 snyk_analysis:
   stage: security_iac
+  cache:
+    - key: "backend-${CI_COMMIT_REF_SLUG}"
+      paths:
+        - .m2/repository
+      policy: pull
+    - key: "frontend-${CI_COMMIT_REF_SLUG}"
+      paths:
+        - frontend/node_modules/
+      policy: pull
   script:
     - |
       if ([string]::IsNullOrEmpty($env:SNYK_TOKEN)) {
@@ -79,6 +95,10 @@ snyk_analysis:
 
 terraform_plan:
   stage: security_iac
+  cache:
+    key: "terraform-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .terraform.d/plugin-cache
   script:
     - cd terraform
     - New-Item -ItemType Directory -Force -Path $env:TF_PLUGIN_CACHE_DIR | Out-Null
