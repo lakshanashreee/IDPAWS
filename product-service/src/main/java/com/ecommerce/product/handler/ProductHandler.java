@@ -139,7 +139,7 @@ public class ProductHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
                 return ResponseUtil.ok("Categories fetched successfully", categories);
             }
 
-            // PUT /products/categories/{categoryId}, DELETE /products/categories/{categoryId}
+            // Handle update and delete routes for categories
             Matcher categoryIdMatcher = CATEGORY_ID_PATH.matcher(path);
             if (categoryIdMatcher.matches()) {
                 String categoryId = resolvePathParam(pathParameters, "categoryId", categoryIdMatcher.group(1));

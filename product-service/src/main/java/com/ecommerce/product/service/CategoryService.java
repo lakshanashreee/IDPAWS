@@ -6,8 +6,12 @@ import com.ecommerce.product.util.IdGenerator;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class CategoryService {
+
+    private static final Logger LOGGER = Logger.getLogger(CategoryService.class.getName());
 
     private final CategoryRepository categoryRepository;
     private final S3ImageService s3ImageService;
@@ -44,16 +48,14 @@ public class CategoryService {
     public Category updateCategory(String categoryId, Category request) {
         Category existing = categoryRepository.getCategory(categoryId);
         if (existing == null) {
-            throw new RuntimeException("Category not found");
+            throw new IllegalArgumentException("Category not found");
         }
 
-        if (request.getImageUrl() != null && !request.getImageUrl().equals(existing.getImageUrl())) {
-            if (existing.getImageUrl() != null) {
-                try {
-                    s3ImageService.deleteObject(existing.getImageUrl());
-                } catch (Exception e) {
-                    System.err.println("Failed to delete old category image from S3: " + e.getMessage());
-                }
+        if (request.getImageUrl() != null && !request.getImageUrl().equals(existing.getImageUrl()) && existing.getImageUrl() != null) {
+            try {
+                s3ImageService.deleteObject(existing.getImageUrl());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to delete old category image from S3: {0}", e.getMessage());
             }
         }
 
@@ -69,13 +71,13 @@ public class CategoryService {
     public void deleteCategory(String categoryId) {
         Category existing = categoryRepository.getCategory(categoryId);
         if (existing == null) {
-            throw new RuntimeException("Category not found");
+            throw new IllegalArgumentException("Category not found");
         }
         if (existing.getImageUrl() != null) {
             try {
                 s3ImageService.deleteObject(existing.getImageUrl());
             } catch (Exception e) {
-                System.err.println("Failed to delete category image from S3: " + e.getMessage());
+                LOGGER.log(Level.WARNING, "Failed to delete category image from S3: {0}", e.getMessage());
             }
         }
         categoryRepository.deleteCategory(categoryId);
