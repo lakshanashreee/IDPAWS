@@ -236,6 +236,13 @@ export async function createInventory(inventoryData) {
   });
 }
 
+export async function updateInventory(productId, inventoryData) {
+  return request(`/inventory/${productId}`, {
+    method: 'PUT',
+    body: JSON.stringify(inventoryData)
+  });
+}
+
 export async function getInventory() {
   return request('/inventory', { method: 'GET' });
 }

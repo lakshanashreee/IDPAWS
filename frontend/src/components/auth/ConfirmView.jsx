@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ConfirmView({
   email,
@@ -13,6 +13,16 @@ export default function ConfirmView({
   clearMessages,
   setView
 }) {
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setConfirmLoading(false);
+      setResendLoading(false);
+    }
+  }, [loading]);
+
   return (
     <div>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', marginBottom: '0.3rem', color: 'var(--text-main)' }}>Verify Email</h2>
@@ -21,7 +31,7 @@ export default function ConfirmView({
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
-      <form onSubmit={handleConfirmSubmit}>
+      <form onSubmit={(e) => { setConfirmLoading(true); handleConfirmSubmit(e); }}>
         <div className="form-group">
           <label htmlFor="confirm-email">Email Address</label>
           <input
@@ -48,18 +58,18 @@ export default function ConfirmView({
         </div>
 
         <button type="submit" className="btn-primary btn-gold" disabled={loading} style={{ width: '100%', marginTop: '0.5rem' }}>
-          {loading ? <><div className="spinner"></div><span>Confirming...</span></> : 'Confirm Account →'}
+          {confirmLoading ? <><div className="spinner"></div><span>Confirming...</span></> : 'Confirm Account →'}
         </button>
       </form>
 
       <button 
         type="button" 
         className="btn-primary btn-secondary" 
-        onClick={handleResendCode}
+        onClick={(e) => { setResendLoading(true); handleResendCode(e); }}
         disabled={loading}
         style={{ width: '100%', marginTop: '0.75rem' }}
       >
-        {loading ? <><div className="spinner"></div><span>Resending...</span></> : 'Resend Verification Code'}
+        {resendLoading ? <><div className="spinner"></div><span>Resending...</span></> : 'Resend Verification Code'}
       </button>
 
       <p className="footer-text">

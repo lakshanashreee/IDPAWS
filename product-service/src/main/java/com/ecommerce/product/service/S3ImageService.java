@@ -34,8 +34,8 @@ public class S3ImageService {
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp", "image/gif"
     );
-    /** Pre-signed URL validity window – 5 minutes is more than enough. */
-    private static final Duration PRESIGN_TTL = Duration.ofMinutes(5);
+    /** Pre-signed URL validity window – 7 days (maximum allowed) */
+    private static final Duration PRESIGN_TTL = Duration.ofDays(7);
 
     private final String bucketName;
     private final String region;

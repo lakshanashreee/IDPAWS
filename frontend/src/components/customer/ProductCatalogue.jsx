@@ -111,6 +111,8 @@ export default function ProductCatalogue({
                     const inv = adminInventory.find(i => i.productId === product.productId);
                     const qty = inv ? inv.availableQuantity : null;
                     const isOutOfStock = qty === 0 || qty === null;
+                    const threshold = inv ? (inv.lowStockThreshold || 5) : 5;
+                    const isLowStock = !isOutOfStock && qty !== null && qty <= threshold;
 
                     return (
                       <div key={product.productId} className="product-card">
@@ -134,6 +136,9 @@ export default function ProductCatalogue({
                           )}
                           {isOutOfStock && (
                             <div className="out-of-stock-badge">Out of Stock</div>
+                          )}
+                          {isLowStock && (
+                            <div className="out-of-stock-badge" style={{ background: '#d97706' }}>Only {qty} left</div>
                           )}
                         </div>
                         <div className="product-info">

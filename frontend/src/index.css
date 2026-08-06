@@ -268,10 +268,18 @@ html {
   gap: 0.5rem;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   background: #34302d;
   box-shadow: 0 10px 22px -5px rgba(28, 25, 23, 0.25);
+}
+
+.btn-primary:disabled {
+  background: #e7e5e4;
+  color: #a8a29e;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-secondary {
@@ -1364,4 +1372,21 @@ html {
   .form-group-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Out of Stock & Low Stock Badge */
+.out-of-stock-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }

@@ -11,6 +11,7 @@ export default function AdminInventory({
   createInventory,
   addStock,
   reduceStock,
+  updateInventory,
   fetchAdminInventory
 }) {
   const lowStockItems = [];
@@ -223,11 +224,7 @@ export default function AdminInventory({
                                   lowStockThreshold: 5
                                 });
                               } else {
-                                if (q > current) {
-                                  await addStock(item.product.productId, q - current);
-                                } else if (q < current) {
-                                  await reduceStock(item.product.productId, current - q);
-                                }
+                                await updateInventory(item.product.productId, { availableQuantity: q });
                               }
                               await fetchAdminInventory();
                             } catch(e) { alert('Failed to update: ' + e.message); }

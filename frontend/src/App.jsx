@@ -26,6 +26,7 @@ import {
   deleteCategory,
   createInventory,
   getInventory,
+  updateInventory,
   reduceStock,
   addStock,
   createPayment,
@@ -425,13 +426,20 @@ function App() {
         const productId = editingProduct.productId;
         await updateProduct(productId, productPayload);
 
-        const existingInv = adminInventory.find(inv => inv.productId === productId) || {};
-        await createInventory({
-          productId,
-          availableQuantity: parseInt(productForm.availableQuantity) || 0,
-          lowStockThreshold: parseInt(productForm.lowStockThreshold) || 5,
-          reservedQuantity: existingInv.reservedQuantity || 0
-        });
+        const existingInv = adminInventory.find(inv => inv.productId === productId);
+        if (existingInv) {
+          await updateInventory(productId, {
+            availableQuantity: parseInt(productForm.availableQuantity) || 0,
+            lowStockThreshold: parseInt(productForm.lowStockThreshold) || 5
+          });
+        } else {
+          await createInventory({
+            productId,
+            availableQuantity: parseInt(productForm.availableQuantity) || 0,
+            lowStockThreshold: parseInt(productForm.lowStockThreshold) || 5,
+            reservedQuantity: 0
+          });
+        }
       } else {
         const createdProduct = await createProduct(productPayload);
         const productId = createdProduct.productId || createdProduct.product?.productId;
@@ -883,6 +891,7 @@ function App() {
                   createInventory={createInventory}
                   addStock={addStock}
                   reduceStock={reduceStock}
+                  updateInventory={updateInventory}
                   fetchAdminInventory={fetchAdminInventory}
                 />
               )}
