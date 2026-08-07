@@ -24,14 +24,14 @@ build_backend:
       - .m2/repository
   script:
     - echo "Building and Testing Java Microservices..."
-    - mvn -T 1C clean package
+    - mvn -f backend/pom.xml -T 1C clean package
   artifacts:
     paths:
-      - product-service/target/*.jar
-      - inventory-service/target/*.jar
-      - cart-service/target/*.jar
-      - order-service/target/*.jar
-      - payment-service/target/*.jar
+      - backend/product-service/target/*.jar
+      - backend/inventory-service/target/*.jar
+      - backend/cart-service/target/*.jar
+      - backend/order-service/target/*.jar
+      - backend/payment-service/target/*.jar
     expire_in: 1 week
 
 build_frontend:
@@ -63,7 +63,7 @@ sonarqube_analysis:
     policy: pull
   script:
     - echo "Running SonarQube static code analysis..."
-    - mvn compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "-Dsonar.projectKey=$env:SONAR_PROJECT_KEY" "-Dsonar.organization=$env:SONAR_ORG" "-Dsonar.host.url=$env:SONAR_HOST_URL" "-Dsonar.token=$env:SONAR_TOKEN"
+    - mvn -f backend/pom.xml compile org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "-Dsonar.projectKey=$env:SONAR_PROJECT_KEY" "-Dsonar.organization=$env:SONAR_ORG" "-Dsonar.host.url=$env:SONAR_HOST_URL" "-Dsonar.token=$env:SONAR_TOKEN"
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
@@ -118,13 +118,13 @@ deploy_backend:
   stage: deploy
   script:
     - echo "Deploying updated code to existing Lambda functions sequentially..."
-    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://product-service/target/product-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://inventory-service/target/inventory-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://cart-service/target/cart-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://order-service/target/order-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
-    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://payment-service/target/payment-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_ProductService --zip-file fileb://backend/product-service/target/product-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_InventoryService --zip-file fileb://backend/inventory-service/target/inventory-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_InventoryEventService --zip-file fileb://backend/inventory-service/target/inventory-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_CartService --zip-file fileb://backend/cart-service/target/cart-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_OrderService --zip-file fileb://backend/order-service/target/order-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_PaymentService --zip-file fileb://backend/payment-service/target/payment-service-1.0.0.jar
+    - aws lambda update-function-code --function-name L_PaymentEventService --zip-file fileb://backend/payment-service/target/payment-service-1.0.0.jar
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
 
