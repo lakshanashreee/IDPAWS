@@ -103,14 +103,3 @@ terraform apply
 
 ---
 
-## 📚 Deep Dive Documentation
-
-To keep this README clean, detailed architectural and code-level documentation is split into two dedicated guides:
-
-* 👉 **[AWS Project & DevOps Guide](AWS_PROJECT_DOCUMENTATION.md)**: Deep dive into the AWS Serverless Architecture, EventBridge/SNS/SQS patterns, GitLab CI/CD pipeline, and Terraform setup.
-* 👉 **[Java Microservices Learning Guide](JAVA_MICROSERVICES_GUIDE.md)**: Explore the standard Java project template. Understand the `handler`, `service`, `repository`, and `dto` layers, perfect for mastering clean backend architecture.
-
----
-<div align="center">
-  <i>Built with ❤️ to demonstrate the pinnacle of Serverless E-Commerce capabilities.</i>
-</div>
