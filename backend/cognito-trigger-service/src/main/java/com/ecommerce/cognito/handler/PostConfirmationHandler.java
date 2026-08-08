@@ -6,6 +6,12 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.CognitoUserPoolPostConfirmationEvent;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupRequest;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * AWS Lambda Post Confirmation trigger for Cognito User Pool.
@@ -19,15 +25,19 @@ public class PostConfirmationHandler implements RequestHandler<CognitoUserPoolPo
     private static final String SIGN_UP_TRIGGER = "PostConfirmation_ConfirmSignUp";
 
     private final CognitoIdentityProviderClient cognitoClient;
+    private final DynamoDbClient dynamoDbClient;
+    private static final String TABLE_NAME = "L_UserDetails";
 
     public PostConfirmationHandler() {
-        // Build the SDK client. It dynamically resolves AWS region and credentials from the Lambda environment.
+        // Build the SDK clients. It dynamically resolves AWS region and credentials from the Lambda environment.
         this.cognitoClient = CognitoIdentityProviderClient.builder().build();
+        this.dynamoDbClient = DynamoDbClient.builder().build();
     }
 
     // Constructor for testing / mocking
-    public PostConfirmationHandler(CognitoIdentityProviderClient cognitoClient) {
+    public PostConfirmationHandler(CognitoIdentityProviderClient cognitoClient, DynamoDbClient dynamoDbClient) {
         this.cognitoClient = cognitoClient;
+        this.dynamoDbClient = dynamoDbClient;
     }
 
     @Override
@@ -64,8 +74,32 @@ public class PostConfirmationHandler implements RequestHandler<CognitoUserPoolPo
                         .build();
 
                 cognitoClient.adminAddUserToGroup(request);
-                
                 logger.log("Successfully added user " + username + " to group " + TARGET_GROUP);
+
+                // Insert into L_UserDetails DynamoDB table
+                String email = null;
+                String name = null;
+                if (event.getRequest() != null && event.getRequest().getUserAttributes() != null) {
+                    email = event.getRequest().getUserAttributes().get("email");
+                    name = event.getRequest().getUserAttributes().get("name");
+                }
+
+                if (email == null) email = "";
+                if (name == null) name = username;
+
+                Map<String, AttributeValue> item = new HashMap<>();
+                item.put("userId", AttributeValue.builder().s(username).build());
+                item.put("email", AttributeValue.builder().s(email).build());
+                item.put("name", AttributeValue.builder().s(name).build());
+
+                PutItemRequest putItemRequest = PutItemRequest.builder()
+                        .tableName(TABLE_NAME)
+                        .item(item)
+                        .build();
+
+                dynamoDbClient.putItem(putItemRequest);
+                logger.log("Successfully created user profile in " + TABLE_NAME + " for user " + username);
+
             } catch (Exception e) {
                 // Log the exception to CloudWatch but return the event to avoid blocking Cognito sign-up process
                 logger.log("ERROR: Failed to add user " + username + " to group " + TARGET_GROUP + ": " + e.getMessage());

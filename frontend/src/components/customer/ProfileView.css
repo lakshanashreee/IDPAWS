@@ -1,0 +1,372 @@
+.profile-wrapper {
+  background-color: transparent;
+  min-height: calc(100vh - 100px);
+  padding: 4rem 2rem;
+}
+
+.profile-container {
+  max-width: 900px;
+  margin: 0 auto;
+  color: var(--text-main);
+  background: var(--bg-card);
+  padding: 3rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(212, 197, 185, 0.5);
+  box-shadow: 0 25px 60px -15px rgba(28, 25, 23, 0.05);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rem;
+  border-bottom: 1px solid rgba(212, 197, 185, 0.3);
+  padding-bottom: 1.5rem;
+}
+
+.profile-header h2 {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 400;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.profile-save-btn {
+  padding: 0.85rem 2.5rem;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+
+.profile-top-section {
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+  margin-bottom: 5rem;
+}
+
+.profile-photo-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+  border: 1px solid rgba(212, 197, 185, 0.5);
+  transition: all var(--transition-bounce);
+}
+
+.profile-photo-wrapper:hover {
+  box-shadow: 0 15px 40px rgba(197, 160, 89, 0.15);
+  border-color: var(--accent-gold);
+}
+
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(28, 25, 23, 0.5);
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.profile-photo-wrapper:hover .photo-overlay {
+  opacity: 1;
+}
+
+.profile-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent-gold);
+  margin-bottom: 0.8rem;
+  display: block;
+}
+
+.name-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.name-display h3 {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  margin: 0;
+  font-weight: 400;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn:hover {
+  color: var(--accent-gold);
+}
+
+.editable-input {
+  border: none;
+  border-bottom: 1px solid rgba(212, 197, 185, 0.8);
+  background: transparent;
+  padding: 0.5rem 0;
+  color: var(--text-main);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.editable-input:focus {
+  border-bottom-color: var(--accent-gold);
+}
+
+.name-input {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  width: 100%;
+  font-weight: 400;
+}
+
+.email-display {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Addresses */
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(212, 197, 185, 0.3);
+  padding-bottom: 1rem;
+}
+
+.section-title-wrapper h3 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.add-address-link {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: color var(--transition-fast);
+}
+
+.add-address-link:hover {
+  color: var(--accent-gold);
+}
+
+.addresses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.address-card, .empty-address-card {
+  background: var(--bg-primary);
+  border: 1px solid rgba(212, 197, 185, 0.6);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  transition: all var(--transition-smooth);
+}
+
+.address-card:hover {
+  box-shadow: 0 15px 30px rgba(0,0,0,0.04);
+  transform: translateY(-3px);
+  border-color: var(--accent-gold);
+}
+
+.empty-address-card {
+  border: 1px dashed rgba(212, 197, 185, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  text-align: center;
+  min-height: 150px;
+}
+
+.empty-address-card:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background: var(--accent-gold-soft);
+}
+
+.address-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.address-tag {
+  background: var(--bg-secondary);
+  color: var(--text-main);
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  border: 1px solid rgba(212, 197, 185, 0.5);
+}
+
+.address-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.address-card:hover .address-delete-btn {
+  opacity: 1;
+}
+
+.address-delete-btn:hover {
+  color: #ef4444;
+}
+
+.address-text {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.8;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+
+/* Modal specific overrides */
+.profile-modal {
+  padding: 3rem;
+  max-width: 550px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(212, 197, 185, 0.5);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+}
+
+.profile-modal h3 {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  margin-top: 0;
+  margin-bottom: 2.5rem;
+  font-weight: 400;
+  color: var(--text-main);
+}
+
+.tag-selector {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.tag-btn {
+  padding: 0.6rem 1.5rem;
+  border: 1px solid rgba(212, 197, 185, 0.8);
+  background: var(--bg-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all var(--transition-smooth);
+}
+
+.tag-btn.active {
+  background: var(--text-main);
+  color: var(--text-white);
+  border-color: var(--text-main);
+  box-shadow: 0 4px 15px rgba(28, 25, 23, 0.15);
+}
+
+.btn-cancel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.85rem 1.5rem;
+  transition: color var(--transition-fast);
+}
+
+.btn-cancel:hover {
+  color: var(--text-main);
+}
+
+.success-message {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 1.25rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 2.5rem;
+  text-align: center;
+  font-weight: 600;
+}

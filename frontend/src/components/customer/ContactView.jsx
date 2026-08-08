@@ -1,23 +1,47 @@
 import React, { useState } from 'react';
 import { IconUser, IconInvoice } from '../common/Icons';
+import { submitContactForm } from '../../utils/api';
 
-export default function ContactView() {
+export default function ContactView({ userSession }) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const userName = userSession?.idToken?.payload?.name || userSession?.payload?.name || '';
+  const userEmail = userSession?.idToken?.payload?.email || userSession?.payload?.email || '';
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: userName,
+    email: userEmail,
     subject: '',
     message: ''
   });
 
-  const handleSubmit = (e) => {
+  React.useEffect(() => {
+    if (userName || userEmail) {
+      setFormData(prev => ({ ...prev, name: userName, email: userEmail }));
+    }
+  }, [userName, userEmail]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      await submitContactForm(formData);
+      setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 4000);
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 5000);
+    } catch (err) {
+      setError(err.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,6 +110,8 @@ export default function ContactView() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="contact-form">
+              {error && <div className="alert alert-error">{error}</div>}
+              
               <div className="form-group-row">
                 <div className="form-group">
                   <label>Full Name *</label>
@@ -94,6 +120,8 @@ export default function ContactView() {
                     placeholder="Enter your name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled={!!userName}
+                    style={userName ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' } : {}}
                     required
                   />
                 </div>
@@ -104,6 +132,8 @@ export default function ContactView() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={!!userEmail}
+                    style={userEmail ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' } : {}}
                     required
                   />
                 </div>
@@ -130,8 +160,8 @@ export default function ContactView() {
                 ></textarea>
               </div>
 
-              <button type="submit" className="btn-primary btn-gold" style={{ width: '100%', marginTop: '1rem', padding: '0.9rem' }}>
-                SEND MESSAGE →
+              <button type="submit" className="btn-primary btn-gold" style={{ width: '100%', marginTop: '1rem', padding: '0.9rem' }} disabled={loading}>
+                {loading ? 'SENDING MESSAGE...' : 'SEND MESSAGE →'}
               </button>
             </form>
           )}

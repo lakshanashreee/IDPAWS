@@ -57,6 +57,7 @@ import CustomerOrders from './components/customer/CustomerOrders';
 import ShoppingBagDrawer from './components/customer/ShoppingBagDrawer';
 import CheckoutView from './components/customer/CheckoutView';
 import WishlistView from './components/customer/WishlistView';
+import ProfileView from './components/customer/ProfileView';
 
 // Admin Components
 import AdminHeader from './components/admin/AdminHeader';
@@ -702,7 +703,7 @@ function App() {
     setView('checkout');
   };
 
-  const handleConfirmPurchase = async () => {
+  const handleConfirmPurchase = async (selectedAddress) => {
     if (!userSession || cartData.items.length === 0) return;
     setCartLoading(true);
     try {
@@ -710,7 +711,7 @@ function App() {
       const paymentMode = isCard ? 'CARD' : 'COD';
 
       // Step 1: Create Order
-      const newOrder = await createOrder(userSession.payload.sub, cartData.items, paymentMode);
+      const newOrder = await createOrder(userSession.payload.sub, cartData.items, paymentMode, selectedAddress);
       const orderId = newOrder?.orderId || newOrder?.order?.orderId || newOrder?.id || (typeof newOrder === 'string' ? newOrder : null);
 
       if (!orderId) {
@@ -818,7 +819,11 @@ function App() {
             )}
 
             {activeTab === 'contact' && (
-              <ContactView />
+              <ContactView userSession={userSession} />
+            )}
+
+            {activeTab === 'profile' && (
+              <ProfileView userSession={userSession} handleLogout={handleLogout} />
             )}
 
             {activeTab === 'orders' && (
@@ -835,6 +840,7 @@ function App() {
             {activeTab === 'wishlist' && (
               <WishlistView
                 wishlistItems={wishlistItems}
+                products={products}
                 adminInventory={adminInventory}
                 cartData={cartData}
                 handleAddToCart={handleAddToCart}
@@ -856,6 +862,7 @@ function App() {
             cartLoading={cartLoading}
             cartSubtotal={cartSubtotal}
             cartData={cartData}
+            userSession={userSession}
           />
         ) : view === 'admin_hub' && userSession ? (
           <div className="admin-wrapper animate-fade-in" style={{ width: '100%', minHeight: '100vh', background: 'var(--bg-primary)' }}>

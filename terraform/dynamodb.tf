@@ -157,3 +157,21 @@ resource "aws_dynamodb_table" "wishlist_table" {
     }
   )
 }
+
+resource "aws_dynamodb_table" "user_details_table" {
+  name         = "L_UserDetails"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "userId"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      ApplicationService = "UserService"
+    }
+  )
+}

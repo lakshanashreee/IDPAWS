@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupRequest;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +24,9 @@ public class PostConfirmationHandlerTest {
     private CognitoIdentityProviderClient cognitoClient;
 
     @Mock
+    private DynamoDbClient dynamoDbClient;
+
+    @Mock
     private Context context;
 
     @Mock
@@ -32,7 +37,7 @@ public class PostConfirmationHandlerTest {
     @BeforeEach
     void setUp() {
         when(context.getLogger()).thenReturn(logger);
-        handler = new PostConfirmationHandler(cognitoClient);
+        handler = new PostConfirmationHandler(cognitoClient, dynamoDbClient);
     }
 
     @Test

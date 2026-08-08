@@ -130,7 +130,13 @@ export default function ProductCatalogue({
                             {wishlistItems.some(item => item.productId === product.productId) ? <IconHeartFilled /> : <IconHeart />}
                           </button>
                           {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} className="product-image" loading="lazy" />
+                            <img 
+                              src={product.imageUrl} 
+                              alt={product.name} 
+                              className="product-image" 
+                              loading="lazy" 
+                              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/f4efe6/c5a059?text=No+Image'; }}
+                            />
                           ) : (
                             <div className="product-image-placeholder">No Image</div>
                           )}

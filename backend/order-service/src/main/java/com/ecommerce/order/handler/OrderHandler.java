@@ -105,6 +105,24 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
                 return ResponseUtil.ok("Order status updated successfully", updated);
             }
 
+            // POST /orders/contact
+            if (path.equals("/orders/contact") && "POST".equalsIgnoreCase(httpMethod)) {
+                // Public route (no AuthorizationUtil check needed)
+                com.ecommerce.order.dto.ContactRequest contactReq = JsonUtil.fromJson(request.getBody(), com.ecommerce.order.dto.ContactRequest.class);
+                if (contactReq == null || contactReq.getEmail() == null || contactReq.getMessage() == null) {
+                    return ResponseUtil.badRequest("Invalid contact request: Email and message are required.");
+                }
+                
+                EmailSender.sendContactEmail(
+                        contactReq.getName(),
+                        contactReq.getEmail(),
+                        contactReq.getSubject(),
+                        contactReq.getMessage()
+                );
+                
+                return ResponseUtil.ok("Contact message sent successfully", null);
+            }
+
             // POST /orders
             if (path.equals("/orders") && "POST".equalsIgnoreCase(httpMethod)) {
                 com.ecommerce.common.security.UserContext user = AuthorizationUtil.requireAdminOrCustomer(request);

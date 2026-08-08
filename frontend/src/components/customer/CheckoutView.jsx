@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getUserProfile } from '../../utils/api';
 
 export default function CheckoutView({
   paymentMethod,
@@ -10,16 +11,64 @@ export default function CheckoutView({
   setActiveTab,
   cartLoading,
   cartSubtotal,
-  cartData
+  cartData,
+  userSession
 }) {
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState('');
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+
+  useEffect(() => {
+    async function fetchAddresses() {
+      if (!userSession) return;
+      setLoadingAddresses(true);
+      try {
+        const profile = await getUserProfile(userSession.payload.sub);
+        if (profile && profile.addresses && profile.addresses.length > 0) {
+          setAddresses(profile.addresses);
+          setSelectedAddress(profile.addresses[0].addressLine);
+        }
+      } catch (err) {
+        console.error('Failed to load addresses:', err);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    }
+    fetchAddresses();
+  }, [userSession]);
   return (
     <div className="checkout-container animate-fade-in" style={{ width: '100%', maxWidth: '1000px', display: 'flex', gap: '2rem', padding: '2rem', flexWrap: 'wrap', zIndex: 1 }}>
       {/* Left side: payment form */}
       <div className="checkout-main" style={{ flex: '1 1 500px', maxWidth: 'none', background: 'var(--bg-card)', padding: '3rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--glass-border)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '0.5rem', fontFamily: 'var(--font-serif)' }}>Payment Information</h2>
-        <p className="subtitle" style={{ marginBottom: '2.5rem', color: 'var(--text-muted)' }}>Select your preferred payment method and complete purchase</p>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '0.5rem', fontFamily: 'var(--font-serif)' }}>Payment & Shipping</h2>
+        <p className="subtitle" style={{ marginBottom: '2.5rem', color: 'var(--text-muted)' }}>Select your preferred shipping address and payment method</p>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleConfirmPurchase(); }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleConfirmPurchase(selectedAddress); }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div className="form-group">
+            <label htmlFor="shipping-address" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Shipping Address</label>
+            {loadingAddresses ? (
+              <p>Loading addresses...</p>
+            ) : addresses.length > 0 ? (
+              <select
+                id="shipping-address"
+                value={selectedAddress}
+                onChange={(e) => setSelectedAddress(e.target.value)}
+                style={{ width: '100%', padding: '1rem', borderRadius: 'var(--radius-sm)', background: 'rgba(212,197,185,0.15)', border: '1px solid transparent', color: 'var(--text-main)', fontSize: '1rem', outline: 'none', appearance: 'none', cursor: 'pointer', transition: 'var(--transition-fast)' }}
+                required
+              >
+                {addresses.map((addr, idx) => (
+                  <option key={idx} value={addr.addressLine}>
+                    {addr.tag} - {addr.addressLine}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div style={{ color: 'var(--accent-color)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                No addresses found. Please add a shipping address in your Profile first.
+              </div>
+            )}
+          </div>
           <div className="form-group">
             <label htmlFor="pay-method" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Payment Method</label>
             <select
@@ -112,10 +161,10 @@ export default function CheckoutView({
             </button>
             <button 
               type="submit" 
-              disabled={cartLoading}
-              style={{ flex: 2, padding: '1rem', background: 'var(--accent-gold)', border: 'none', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 600, cursor: 'pointer', transition: 'var(--transition-fast)', opacity: cartLoading ? 0.7 : 1 }}
-              onMouseOver={(e) => { if(!cartLoading) e.target.style.background = 'var(--accent-gold-hover)' }}
-              onMouseOut={(e) => { if(!cartLoading) e.target.style.background = 'var(--accent-gold)' }}
+              disabled={cartLoading || addresses.length === 0}
+              style={{ flex: 2, padding: '1rem', background: 'var(--accent-gold)', border: 'none', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 600, cursor: 'pointer', transition: 'var(--transition-fast)', opacity: (cartLoading || addresses.length === 0) ? 0.7 : 1 }}
+              onMouseOver={(e) => { if(!cartLoading && addresses.length > 0) e.target.style.background = 'var(--accent-gold-hover)' }}
+              onMouseOut={(e) => { if(!cartLoading && addresses.length > 0) e.target.style.background = 'var(--accent-gold)' }}
             >
               {cartLoading ? <div className="spinner"></div> : (paymentMethod === 'CARD' ? `Pay ₹${cartSubtotal.toFixed(2)}` : 'Confirm Order →')}
             </button>

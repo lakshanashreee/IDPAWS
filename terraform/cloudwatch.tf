@@ -381,6 +381,34 @@ resource "aws_cloudwatch_dashboard" "production_dashboard" {
                 ],
                 "region": "ap-southeast-1"
             }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 45,
+            "width": 6,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Cognito", "SignInSuccesses", "UserPool", "${aws_cognito_user_pool.user_pool.id}", "UserPoolClient", "${aws_cognito_user_pool_client.client.id}", { "region": "ap-southeast-1" } ],
+                    [ ".", "SignUpSuccesses", ".", ".", ".", ".", { "region": "ap-southeast-1" } ]
+                ],
+                "region": "ap-southeast-1",
+                "stacked": false,
+                "title": "Cognito",
+                "view": "timeSeries",
+                "period": 300
+            }
+        },
+        {
+            "type": "text",
+            "x": 0,
+            "y": 44,
+            "width": 24,
+            "height": 1,
+            "properties": {
+                "markdown": "\n# Cognito\n"
+            }
         }
     ]
 }

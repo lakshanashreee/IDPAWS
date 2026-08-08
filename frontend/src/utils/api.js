@@ -147,17 +147,31 @@ export async function clearCart(userId) {
 // ----------------------------------------------------
 // ORDER SERVICE
 // ----------------------------------------------------
-export async function createOrder(userId, items, paymentMode) {
+export async function createOrder(userId, items, paymentMode, shippingAddress) {
   const envelope = await request('/orders', {
     method: 'POST',
     rawEnvelope: true,
-    body: JSON.stringify({ userId, items, paymentMode })
+    body: JSON.stringify({ userId, items, paymentMode, shippingAddress })
   });
   const order = unwrap(envelope);
   const message = envelope?.message || '';
   const eventPublished = envelope?.success === true
     && message.toLowerCase().includes('event published');
   return { order, eventPublished, message };
+}
+
+// ----------------------------------------------------
+// USER SERVICE
+// ----------------------------------------------------
+export async function getUserProfile(userId) {
+  return request(`/users/${userId}`, { method: 'GET', suppressLogout: true });
+}
+
+export async function updateUserProfile(userId, profileData) {
+  return request(`/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(profileData)
+  });
 }
 
 export async function getUserOrders(userId) {
@@ -297,5 +311,13 @@ export async function createPayment(orderIdOrData, userId, amount, paymentMode, 
   return request('/payments', {
     method: 'POST',
     body: JSON.stringify(payload)
+  });
+}
+
+export async function submitContactForm(contactData) {
+  return request('/orders/contact', {
+    method: 'POST',
+    body: JSON.stringify(contactData),
+    suppressLogout: true // Allow anyone to submit
   });
 }

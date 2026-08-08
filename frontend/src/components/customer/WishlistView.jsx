@@ -3,6 +3,7 @@ import { IconBag, IconHeartFilled } from '../common/Icons';
 
 export default function WishlistView({
   wishlistItems = [],
+  products = [],
   adminInventory = [],
   cartData,
   handleAddToCart,
@@ -24,7 +25,8 @@ export default function WishlistView({
         </div>
       ) : (
         <div className="product-grid">
-          {wishlistItems.map(product => {
+          {wishlistItems.map(wishlistItem => {
+            const product = products?.find(p => p.productId === wishlistItem.productId) || wishlistItem;
             const inv = adminInventory.find(i => i.productId === product.productId);
             const qty = inv ? inv.availableQuantity : null;
             const isOutOfStock = qty === 0 || qty === null;
@@ -45,7 +47,14 @@ export default function WishlistView({
                     <IconHeartFilled />
                   </button>
                   {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="product-image" loading="lazy" style={{ objectFit: 'contain' }} />
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      className="product-image" 
+                      loading="lazy" 
+                      style={{ objectFit: 'contain' }} 
+                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/f4efe6/c5a059?text=No+Image'; }}
+                    />
                   ) : (
                     <div className="product-image-placeholder">No Image</div>
                   )}
