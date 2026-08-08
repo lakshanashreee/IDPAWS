@@ -73,7 +73,6 @@ public class UserHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGat
             return ResponseUtil.badRequest("Unsupported route: " + httpMethod + " " + path);
         } catch (Exception e) {
             logger.log("Unexpected error: " + e.getMessage());
-            e.printStackTrace();
             return ResponseUtil.serverError("Internal server error");
         }
     }

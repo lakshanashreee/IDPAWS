@@ -25,7 +25,6 @@ public class EmailSender {
             sendRestockEmailSync(recipientEmail, productId, imageUrl, productName);
         } catch (Exception e) {
             System.err.println("Failed to send restock notification: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

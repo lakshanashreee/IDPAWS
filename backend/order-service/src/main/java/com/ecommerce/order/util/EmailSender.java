@@ -28,7 +28,6 @@ public class EmailSender {
             sendEmailSync(recipientEmail, order);
         } catch (Exception e) {
             System.err.println("Failed to send order confirmation: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -128,7 +127,6 @@ public class EmailSender {
             sendContactEmailSync(senderName, senderEmail, subject, messageContent);
         } catch (Exception e) {
             System.err.println("Failed to send contact email: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
