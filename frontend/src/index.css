@@ -662,7 +662,8 @@ html {
   line-height: 1.5;
 }
 
-.product-footer {
+.product-footer,
+.product-bottom-row {
   margin-top: auto;
   display: flex;
   align-items: center;
