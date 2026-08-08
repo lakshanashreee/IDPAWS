@@ -79,16 +79,20 @@ snyk_analysis:
       paths:
         - frontend/node_modules/
       policy: pull
+    - key: "tools-cache"
+      paths:
+        - .tools/
   script:
     - |
       if ([string]::IsNullOrEmpty($env:SNYK_TOKEN)) {
         Write-Host "SNYK_TOKEN is not set or empty. Skipping Snyk scan..."
         exit 0
       }
-    - if (-not (Test-Path "snyk.exe")) { Write-Host "Downloading Snyk CLI..."; Invoke-WebRequest -Uri "https://static.snyk.io/cli/latest/snyk-win.exe" -OutFile "snyk.exe" }
-    - .\snyk.exe config set api="$env:SNYK_TOKEN"
-    - .\snyk.exe test --all-projects --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk test found issues" }
-    - .\snyk.exe iac test terraform/ --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk IaC test found issues" }
+    - New-Item -ItemType Directory -Force -Path ".tools" | Out-Null
+    - if (-not (Test-Path ".tools\snyk.exe")) { Write-Host "Downloading Snyk CLI..."; Invoke-WebRequest -Uri "https://static.snyk.io/cli/latest/snyk-win.exe" -OutFile ".tools\snyk.exe" }
+    - .\.tools\snyk.exe config set api="$env:SNYK_TOKEN"
+    - .\.tools\snyk.exe test --all-projects --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk test found issues" }
+    - .\.tools\snyk.exe iac test terraform/ --severity-threshold=high --report ; if ($LASTEXITCODE -ne 0) { Write-Host "Snyk IaC test found issues" }
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "terraform" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
@@ -96,16 +100,20 @@ snyk_analysis:
 terraform_plan:
   stage: security_iac
   cache:
-    key: "terraform-${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .terraform.d/plugin-cache
+    - key: "terraform-${CI_COMMIT_REF_SLUG}"
+      paths:
+        - .terraform.d/plugin-cache
+    - key: "tools-cache"
+      paths:
+        - .tools/
   script:
+    - New-Item -ItemType Directory -Force -Path ".tools" | Out-Null
+    - if (-not (Test-Path ".tools\terraform.exe")) { Write-Host "Downloading Terraform..."; Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"; Expand-Archive -Path "terraform.zip" -DestinationPath ".tools" -Force }
     - cd terraform
     - New-Item -ItemType Directory -Force -Path $env:TF_PLUGIN_CACHE_DIR | Out-Null
-    - if (-not (Test-Path "terraform.exe")) { Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_windows_amd64.zip" -OutFile "terraform.zip"; Expand-Archive -Path "terraform.zip" -DestinationPath "." -Force }
-    - .\terraform.exe init -backend=false
-    - .\terraform.exe validate
-    - .\terraform.exe plan -parallelism=30
+    - ..\.tools\terraform.exe init -backend=false
+    - ..\.tools\terraform.exe validate
+    - ..\.tools\terraform.exe plan -parallelism=30
   artifacts:
     name: terraform-plan
     paths:
