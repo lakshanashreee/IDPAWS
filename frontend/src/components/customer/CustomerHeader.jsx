@@ -16,22 +16,37 @@ export default function CustomerHeader({
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [profileName, setProfileName] = useState('');
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const fetchData = async () => {
+      setIsProfileLoading(true);
       try {
         if (userSession?.payload?.sub) {
           const data = await getUserProfile(userSession.payload.sub);
-          if (data && (data.photoUrl || data.profilePhotoUrl)) {
-            setProfilePhoto(data.photoUrl || data.profilePhotoUrl);
+          if (data) {
+            if (data.photoUrl || data.profilePhotoUrl) {
+              setProfilePhoto(data.photoUrl || data.profilePhotoUrl);
+            }
+            if (data.name) {
+              setProfileName(data.name);
+            } else {
+              setProfileName(userSession?.payload?.name || userSession?.payload?.['cognito:username'] || userSession?.payload?.email);
+            }
           }
         }
       } catch (e) {
-        // Ignore if not found
+        setProfileName(userSession?.payload?.name || userSession?.payload?.['cognito:username'] || userSession?.payload?.email);
+      } finally {
+        setIsProfileLoading(false);
       }
     };
-    fetchPhoto();
+    
+    fetchData();
+    window.addEventListener('profileUpdated', fetchData);
+    return () => window.removeEventListener('profileUpdated', fetchData);
   }, [userSession]);
 
   const count = cartTotalQuantity !== undefined 
@@ -73,7 +88,15 @@ export default function CustomerHeader({
         <div className="header-left" style={{ gap: '1.2rem' }}>
           <div className="user-pill" style={{ cursor: 'default' }}>
             <IconUser />
-            <span><strong>{userSession.payload.name || userSession.payload.email}</strong></span>
+            <span>
+              <strong>
+                {isProfileLoading ? (
+                  <div className="luxury-shimmer" style={{ width: '80px', height: '16px', display: 'inline-block', verticalAlign: 'middle' }}></div>
+                ) : (
+                  profileName
+                )}
+              </strong>
+            </span>
           </div>
           <nav className="header-nav-links" style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
             <button type="button" className={`nav-text-link ${activeTab === 'catalog' ? 'active' : ''}`} onClick={handleCollectionsClick}>COLLECTIONS</button>

@@ -79,6 +79,7 @@ const ProfileView = ({ userSession, handleLogout }) => {
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
       setIsNameEditing(false);
+      window.dispatchEvent(new Event('profileUpdated'));
       setTimeout(() => setSuccess(''), 3000); // clear success message after 3s
     } catch (err) {
       if (err.message === 'UNAUTHORIZED' && handleLogout) {

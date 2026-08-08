@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IconBag, IconSearch, IconHeart, IconHeartFilled } from '../common/Icons';
+import { notifyRestock } from '../../utils/api';
 
 export default function ProductCatalogue({
   products = [],
@@ -17,9 +18,34 @@ export default function ProductCatalogue({
   handleAddToCart,
   cartLoading,
   wishlistItems = [],
-  toggleWishlist
+  toggleWishlist,
+  userSession
 }) {
   const displayProducts = filteredProducts !== undefined ? filteredProducts : products;
+  const [notifiedProducts, setNotifiedProducts] = useState(new Set());
+  const [notifyingIds, setNotifyingIds] = useState(new Set());
+
+  const handleNotifyMe = async (product) => {
+    if (!userSession || !userSession.payload || !userSession.payload.email) {
+      alert('Please log in to use this feature.');
+      return;
+    }
+    const productId = product.productId;
+    setNotifyingIds(prev => new Set(prev).add(productId));
+    try {
+      await notifyRestock(productId, userSession.payload.email, product.imageUrl, product.name);
+      setNotifiedProducts(prev => new Set(prev).add(productId));
+    } catch (error) {
+      console.error('Failed to set notification:', error);
+      alert('Could not set notification. Please try again.');
+    } finally {
+      setNotifyingIds(prev => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }
+  };
 
   return (
     <>
@@ -153,15 +179,31 @@ export default function ProductCatalogue({
                           <p className="product-desc">{product.description}</p>
                           <div className="product-bottom-row">
                             <span className="product-price">₹{product.price.toFixed(2)}</span>
-                            <button
-                              type="button"
-                              className="btn-primary add-to-bag-btn"
-                              disabled={cartLoading || isOutOfStock}
-                              onClick={() => handleAddToCart(product)}
-                            >
-                              <IconBag />
-                              <span style={{ marginLeft: '6px' }}>{isOutOfStock ? 'Sold Out' : 'Add to Bag'}</span>
-                            </button>
+                            {isOutOfStock ? (
+                              <button
+                                type="button"
+                                className="btn-primary add-to-bag-btn"
+                                disabled={notifyingIds.has(product.productId) || notifiedProducts.has(product.productId)}
+                                onClick={() => handleNotifyMe(product)}
+                                style={{ background: '#57534e', border: 'none' }}
+                              >
+                                <span>
+                                  {notifyingIds.has(product.productId) ? 'Setting up...' 
+                                    : notifiedProducts.has(product.productId) ? 'We\'ll email you!' 
+                                    : 'Notify Me'}
+                                </span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn-primary add-to-bag-btn"
+                                disabled={cartLoading}
+                                onClick={() => handleAddToCart(product)}
+                              >
+                                <IconBag />
+                                <span style={{ marginLeft: '6px' }}>Add to Bag</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

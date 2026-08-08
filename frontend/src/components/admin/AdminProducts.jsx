@@ -44,7 +44,7 @@ export default function AdminProducts({
             <div key={product.productId} className="product-card" style={{ display: 'flex', flexDirection: 'column' }}>
               <div className="product-image-container" style={{ position: 'relative' }}>
                 {product.imageUrl || product.image ? (
-                  <img className="product-image" src={product.imageUrl || product.image} alt={product.name} />
+                  <img className="product-image" style={{ objectFit: 'contain' }} src={product.imageUrl || product.image} alt={product.name} />
                 ) : (
                   <div className="product-image-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <span className="placeholder-icon" style={{ fontSize: '2rem', color: 'var(--accent-gold)' }}><IconBag /></span>

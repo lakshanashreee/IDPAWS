@@ -54,6 +54,7 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
     private static final String LOW_STOCK_PATH = "/inventory/low-stock";
     private static final Pattern ADD_STOCK_PATH = Pattern.compile("^/inventory/([^/]+)/add-stock$");
     private static final Pattern REDUCE_STOCK_PATH = Pattern.compile("^/inventory/([^/]+)/reduce-stock$");
+    private static final Pattern NOTIFY_PATH = Pattern.compile("^/inventory/([^/]+)/notify$");
     private static final Pattern PRODUCT_ID_PATH = Pattern.compile("^/inventory/([^/]+)$");
 
     public InventoryHandler() {
@@ -115,6 +116,19 @@ public class InventoryHandler implements RequestHandler<APIGatewayV2HTTPEvent, A
                 Integer quantity = stockRequest != null ? stockRequest.getQuantity() : null;
                 InventoryResponse updated = inventoryService.reduceStock(productId, quantity);
                 return ResponseUtil.ok("Stock reduced successfully", updated);
+            }
+
+            // POST /inventory/{productId}/notify
+            Matcher notifyMatcher = NOTIFY_PATH.matcher(path);
+            if (notifyMatcher.matches() && "POST".equalsIgnoreCase(httpMethod)) {
+                AuthorizationUtil.extractUser(request); // any logged in user
+                String productId = resolvePathParam(pathParameters, "productId", notifyMatcher.group(1));
+                com.ecommerce.inventory.dto.NotifyRequest notifyReq = JsonUtil.fromJson(getBody(request), com.ecommerce.inventory.dto.NotifyRequest.class);
+                if (notifyReq == null || notifyReq.getEmail() == null || notifyReq.getEmail().isBlank()) {
+                    return ResponseUtil.badRequest("Email is required");
+                }
+                inventoryService.addNotifyEmail(productId, notifyReq.getEmail(), notifyReq.getImageUrl(), notifyReq.getProductName());
+                return ResponseUtil.ok("Added to notification list", null);
             }
 
             // POST /inventory

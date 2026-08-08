@@ -285,6 +285,13 @@ export async function reduceStock(productId, quantity) {
   }
 }
 
+export async function notifyRestock(productId, email, imageUrl, productName) {
+  return request(`/inventory/${productId}/notify`, {
+    method: 'POST',
+    body: JSON.stringify({ email, imageUrl, productName })
+  });
+}
+
 // ----------------------------------------------------
 // PAYMENT SERVICE
 // ----------------------------------------------------

@@ -168,7 +168,7 @@ export default function ProductModal({
                   <img
                     src={URL.createObjectURL(productImageFile)}
                     alt="Preview"
-                    style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '8px' }}
+                    style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '8px', objectFit: 'contain' }}
                   />
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{productImageFile.name}</span>
                   <button

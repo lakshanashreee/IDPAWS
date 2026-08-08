@@ -105,6 +105,11 @@ public class InventoryRepository {
         item.put("reservedQuantity", AttributeValue.builder().n(String.valueOf(inventory.getReservedQuantity())).build());
         item.put("lowStockThreshold", AttributeValue.builder().n(String.valueOf(inventory.getLowStockThreshold())).build());
         item.put("lastUpdated", AttributeValue.builder().s(nullSafe(inventory.getLastUpdated())).build());
+        if (inventory.getNotifyEmails() != null && !inventory.getNotifyEmails().isEmpty()) {
+            item.put("notifyEmails", AttributeValue.builder().ss(inventory.getNotifyEmails()).build());
+        }
+        item.put("notifyImageUrl", AttributeValue.builder().s(nullSafe(inventory.getNotifyImageUrl())).build());
+        item.put("notifyProductName", AttributeValue.builder().s(nullSafe(inventory.getNotifyProductName())).build());
         return item;
     }
 
@@ -115,6 +120,11 @@ public class InventoryRepository {
         inventory.setReservedQuantity(getInt(item, "reservedQuantity"));
         inventory.setLowStockThreshold(getInt(item, "lowStockThreshold"));
         inventory.setLastUpdated(getString(item, "lastUpdated"));
+        if (item.containsKey("notifyEmails") && item.get("notifyEmails").ss() != null) {
+            inventory.setNotifyEmails(new java.util.HashSet<>(item.get("notifyEmails").ss()));
+        }
+        inventory.setNotifyImageUrl(getString(item, "notifyImageUrl"));
+        inventory.setNotifyProductName(getString(item, "notifyProductName"));
         return inventory;
     }
 

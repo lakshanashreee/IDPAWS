@@ -17,8 +17,12 @@ public class Inventory {
     private int reservedQuantity;
     private int lowStockThreshold;
     private String lastUpdated;
+    private java.util.Set<String> notifyEmails;
+    private String notifyImageUrl;
+    private String notifyProductName;
 
     public Inventory() {
+        this.notifyEmails = new java.util.HashSet<>();
     }
 
     public Inventory(String productId, int availableQuantity, int reservedQuantity,
@@ -28,6 +32,7 @@ public class Inventory {
         this.reservedQuantity = reservedQuantity;
         this.lowStockThreshold = lowStockThreshold;
         this.lastUpdated = lastUpdated;
+        this.notifyEmails = new java.util.HashSet<>();
     }
 
     public String getProductId() {
@@ -70,6 +75,33 @@ public class Inventory {
         this.lastUpdated = lastUpdated;
     }
 
+    public java.util.Set<String> getNotifyEmails() {
+        if (notifyEmails == null) {
+            notifyEmails = new java.util.HashSet<>();
+        }
+        return notifyEmails;
+    }
+
+    public void setNotifyEmails(java.util.Set<String> notifyEmails) {
+        this.notifyEmails = notifyEmails;
+    }
+
+    public String getNotifyImageUrl() {
+        return notifyImageUrl;
+    }
+
+    public void setNotifyImageUrl(String notifyImageUrl) {
+        this.notifyImageUrl = notifyImageUrl;
+    }
+
+    public String getNotifyProductName() {
+        return notifyProductName;
+    }
+
+    public void setNotifyProductName(String notifyProductName) {
+        this.notifyProductName = notifyProductName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,6 +123,7 @@ public class Inventory {
                 ", reservedQuantity=" + reservedQuantity +
                 ", lowStockThreshold=" + lowStockThreshold +
                 ", lastUpdated='" + lastUpdated + '\'' +
+                ", notifyEmails=" + (notifyEmails != null ? notifyEmails.size() : 0) + " waiting" +
                 '}';
     }
 }

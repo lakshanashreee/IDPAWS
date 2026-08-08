@@ -67,11 +67,44 @@ public class InventoryService {
             throw new InventoryNotFoundException(productId);
         }
 
+        boolean wasOutOfStock = inventory.getAvailableQuantity() == 0;
+
         inventory.setAvailableQuantity(inventory.getAvailableQuantity() + quantity);
         inventory.setLastUpdated(Instant.now().toString());
 
+        // Send notifications if restocked
+        if (wasOutOfStock && inventory.getAvailableQuantity() > 0) {
+            java.util.Set<String> emails = inventory.getNotifyEmails();
+            if (emails != null && !emails.isEmpty()) {
+                for (String email : emails) {
+                    com.ecommerce.inventory.util.EmailSender.sendRestockNotification(email, productId, inventory.getNotifyImageUrl(), inventory.getNotifyProductName());
+                }
+                // Clear the notification list
+                emails.clear();
+                inventory.setNotifyEmails(emails);
+                inventory.setNotifyImageUrl(null);
+                inventory.setNotifyProductName(null);
+            }
+        }
+
         inventoryRepository.updateInventory(inventory);
         return InventoryResponse.fromInventory(inventory);
+    }
+
+    public void addNotifyEmail(String productId, String email, String imageUrl, String productName) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be blank");
+        }
+        Inventory inventory = inventoryRepository.getInventoryById(productId);
+        if (inventory == null) {
+            throw new InventoryNotFoundException(productId);
+        }
+        java.util.Set<String> emails = inventory.getNotifyEmails();
+        emails.add(email);
+        inventory.setNotifyEmails(emails);
+        if (imageUrl != null) inventory.setNotifyImageUrl(imageUrl);
+        if (productName != null) inventory.setNotifyProductName(productName);
+        inventoryRepository.updateInventory(inventory);
     }
 
     public InventoryResponse reduceStock(String productId, Integer quantity) {

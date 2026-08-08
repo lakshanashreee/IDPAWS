@@ -68,8 +68,30 @@ import AdminCustomers from './components/admin/AdminCustomers';
 import AdminAnalytics from './components/admin/AdminAnalytics';
 
 function App() {
+  const getInitialSession = () => {
+    const saved = localStorage.getItem('cognito_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (err) {
+        localStorage.removeItem('cognito_session');
+      }
+    }
+    return null;
+  };
+
+  const initialSession = getInitialSession();
+
+  const getInitialView = (session) => {
+    if (session) {
+      const groups = session.payload['cognito:groups'] || [];
+      return groups.includes('ADMIN') ? 'admin_hub' : 'customer_hub';
+    }
+    return 'login';
+  };
+
   // Navigation states: 'login' | 'register' | 'confirm' | 'new_password_required' | 'customer_hub' | 'admin_hub' | 'checkout'
-  const [view, setView] = useState('login');
+  const [view, setView] = useState(() => getInitialView(initialSession));
   
   // Input states
   const [email, setEmail] = useState('');
@@ -89,7 +111,7 @@ function App() {
   const [success, setSuccess] = useState('');
   
   // Authenticated user session state
-  const [userSession, setUserSession] = useState(null);
+  const [userSession, setUserSession] = useState(initialSession);
 
   // ----------------------------------------------------
   // STOREFRONT STATES
@@ -111,12 +133,16 @@ function App() {
   // ----------------------------------------------------
   // ADDITIONAL CUSTOMER HUB STATES (Orders & Checkout)
   // ----------------------------------------------------
-  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'catalog' | 'orders'
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('activeTab') || 'home'); // 'home' | 'catalog' | 'orders'
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState('');
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
   
+  useEffect(() => {
+    sessionStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
+
   // Checkout & Payment states
   const [paymentMethod, setPaymentMethod] = useState('COD'); // 'COD' | 'CARD'
   const [cardDetails, setCardDetails] = useState({
@@ -129,7 +155,12 @@ function App() {
   // ----------------------------------------------------
   // ADMIN HUB STATES
   // ----------------------------------------------------
-  const [adminTab, setAdminTab] = useState('products'); // 'products' | 'inventory' | 'categories' | 'customers' | 'analytics'
+  const [adminTab, setAdminTab] = useState(() => sessionStorage.getItem('adminTab') || 'products'); // 'products' | 'inventory' | 'categories' | 'customers' | 'analytics'
+  
+  useEffect(() => {
+    sessionStorage.setItem('adminTab', adminTab);
+  }, [adminTab]);
+
   const [adminInventory, setAdminInventory] = useState([]);
   const [adminOrders, setAdminOrders] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null); // String (userId)
@@ -174,25 +205,6 @@ function App() {
       }
     }
   }, [products, cartData.items]);
-
-  // Restore cognito_session on initial load
-  useEffect(() => {
-    const saved = localStorage.getItem('cognito_session');
-    if (saved) {
-      try {
-        const sessionData = JSON.parse(saved);
-        setUserSession(sessionData);
-        const groups = sessionData.payload['cognito:groups'] || [];
-        if (groups.includes('ADMIN')) {
-          setView('admin_hub');
-        } else {
-          setView('customer_hub');
-        }
-      } catch (err) {
-        localStorage.removeItem('cognito_session');
-      }
-    }
-  }, []);
 
   const clearMessages = () => {
     setError('');
@@ -806,6 +818,7 @@ function App() {
                 fetchProducts={fetchProducts}
                 wishlistItems={wishlistItems}
                 toggleWishlist={toggleWishlist}
+                userSession={userSession}
               />
             )}
 
@@ -847,6 +860,7 @@ function App() {
                 cartLoading={cartLoading}
                 toggleWishlist={toggleWishlist}
                 setActiveTab={setActiveTab}
+                userSession={userSession}
               />
             )}
           </>
