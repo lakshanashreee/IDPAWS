@@ -15,6 +15,7 @@ import com.ecommerce.order.exception.OrderNotFoundException;
 import com.ecommerce.order.service.OrderService;
 import com.ecommerce.order.util.JsonUtil;
 import com.ecommerce.order.util.ResponseUtil;
+import com.ecommerce.order.util.EmailSender;
 
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,11 @@ public class OrderHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGa
                 OrderService.CreateOrderResult result = orderService.createOrder(orderRequest);
 
                 if (result.isSuccess()) {
+                    // Send order confirmation email
+                    if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
+                        EmailSender.sendOrderConfirmation(user.getEmail(), result.getOrder());
+                    }
+                    
                     return ResponseUtil.created(result.getMessage(), result.getOrder());
                 }
                 // Order was saved, but the SNS publish failed — report as a
